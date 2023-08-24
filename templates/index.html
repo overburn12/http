@@ -15,10 +15,23 @@
         #chat_input_container {
             display: flex; /* Use flex layout to align textarea and button */
         }
+        .user-name {
+            color: red;
+        }
+        .bot-name {
+            color: blue;
+        }
+        pre code {
+            display: block;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
-    <h1>Chat with OpenAI</h1>
+    <h1>Overburn's ChatGPT Webserver</h1>
     <div id="chat_history"></div>
     <div id="chat_input_container">
         <textarea id="user_message"></textarea>
@@ -26,6 +39,22 @@
     </div>
     <script>
         var chatHistory = [];
+
+        function render_message(input_message) {
+            // Use a regular expression to match code blocks wrapped in triple backticks
+            var regex = /```([\s\S]*?)```/g;
+
+            // Replace each match with a corresponding 'pre' and 'code' element
+            var output_message = input_message.replace(regex, function(match, code) {
+                // Escape any HTML entities in the code block
+                var escapedCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+                // Return the 'pre' and 'code' HTML string with the escaped code
+                return '<pre><code>' + escapedCode + '</code></pre>';
+            });
+
+            return output_message;
+        }
 
         function sendMessage() {
             var userMessageContent = document.getElementById('user_message').value;
@@ -44,9 +73,9 @@
                 if (data.bot_message.error) {
                     alert(data.bot_message.error);
                 } else {
-                    var botMessageContent = data.bot_message.content;
-                    chatHistory.push({ role: 'assistant', content: botMessageContent });
-                    document.getElementById('chat_history').innerHTML += '<p>User: ' + userMessageContent + '</p><p>Bot: ' + botMessageContent + '</p>';
+                    var userMessageContent = '<p> <span class="user-name">User:</span> ' + render_message(userMessage.content) + '</p>';
+                    var botMessageContent = '<p> <span class="bot-name">Bot:</span> ' + render_message(data.bot_message.content) + '</p>';
+                    document.getElementById('chat_history').innerHTML += userMessageContent + botMessageContent;
                 }
             })
             .catch(error => {
