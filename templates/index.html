@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        #user_message {
+            width: 80%; /* You can adjust this value */
+            height: 4em; /* Height for 4 lines */
+        }
+        #send_button {
+            display: inline; /* Display button inline with textarea */
+        }
+        #chat_input_container {
+            display: flex; /* Use flex layout to align textarea and button */
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat with OpenAI</h1>
+    <div id="chat_history"></div>
+    <div id="chat_input_container">
+        <textarea id="user_message"></textarea>
+        <button id="send_button" onclick="sendMessage()">Send</button>
+    </div>
+    <script>
+        var chatHistory = [];
+
+        function sendMessage() {
+            var userMessageContent = document.getElementById('user_message').value;
+            var userMessage = { role: 'user', content: userMessageContent };
+            chatHistory.push(userMessage);
+
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user_message: chatHistory })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.bot_message.error) {
+                    alert(data.bot_message.error);
+                } else {
+                    var botMessageContent = data.bot_message.content;
+                    chatHistory.push({ role: 'assistant', content: botMessageContent });
+                    document.getElementById('chat_history').innerHTML += '<p>User: ' + userMessageContent + '</p><p>Bot: ' + botMessageContent + '</p>';
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+            document.getElementById('user_message').value = '';
+        }
+    </script>
+</body>
+</html>

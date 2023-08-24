@@ -1,11 +1,25 @@
-from flask import Flask, render_template, request
 import openai
-
-openai_api_key = 'YOUR-OPENAI-API-KEY'
-
-openai.api_key = openai_api_key
+from flask import Flask, render_template, request, jsonify
+from openai.error import OpenAIError
 
 app = Flask(__name__)
+
+##############################################
+with open("api-key.txt", 'r') as file:
+    openai_api_key = file.read()
+openai.api_key = openai_api_key
+
+def process_message(chat_history):
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=chat_history  
+        )
+        ai_message = {"role": "assistant", "content": response['choices'][0]['message']['content']}
+        return ai_message
+    except OpenAIError as e:
+        return {"error": str(e)}
+##############################################
 
 @app.route('/')
 def index():
@@ -13,14 +27,9 @@ def index():
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    user_message = request.form['user_message']
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=user_message,
-        max_tokens=50
-    )
-    bot_message = response.choices[0].text
-    return bot_message
+    user_message = request.json['user_message']
+    bot_message = process_message(user_message)
+    return jsonify({ 'bot_message': bot_message })
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000) 
