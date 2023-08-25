@@ -43,15 +43,20 @@
         function render_message(input_message) {
             // Use a regular expression to match code blocks wrapped in triple backticks
             var regex = /```([\s\S]*?)```/g;
-
-            // Replace each match with a corresponding 'pre' and 'code' element
-            var output_message = input_message.replace(regex, function(match, code) {
-                // Escape any HTML entities in the code block
-                var escapedCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-                // Return the 'pre' and 'code' HTML string with the escaped code
-                return '<pre><code>' + escapedCode + '</code></pre>';
-            });
+            var parts = input_message.split(regex);
+            
+            // Process each part of the message
+            var output_message = parts.map(function(part, index) {
+                // If the index is odd, then it's a code block
+                if (index % 2 === 1) {
+                    // Escape any HTML entities in the code block
+                    var escapedCode = part.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    return '<pre><code>' + escapedCode + '</code></pre>';
+                } else {
+                    // Replace new lines with <br> tags in the non-code parts
+                    return part.replace(/\n/g, '<br>');
+                }
+            }).join('');
 
             return output_message;
         }
