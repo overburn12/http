@@ -1,94 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot</title>
-    <style>
-        #user_message {
-            width: 80%; /* You can adjust this value */
-            height: 4em; /* Height for 4 lines */
-        }
-        #send_button {
-            display: inline; /* Display button inline with textarea */
-        }
-        #chat_input_container {
-            display: flex; /* Use flex layout to align textarea and button */
-        }
-        .user-name {
-            color: red;
-        }
-        .bot-name {
-            color: blue;
-        }
-        pre code {
-            display: block;
-            background-color: #f0f0f0;
-            border: 1px solid #ccc;
-            padding: 10px;
-            font-family: monospace;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot</title>
+  <style>
+      #user_message {
+          width: 80%; /* You can adjust this value */
+          height: 4em; /* Height for 4 lines */
+      }
+      #send_button {
+          display: inline; /* Display button inline with textarea */
+      }
+      #chat_input_container {
+          display: flex; /* Use flex layout to align textarea and button */
+      }
+      .user-name {
+          color: red;
+      }
+      .bot-name {
+          color: blue;
+      }
+      pre code {
+          display: block;
+          background-color: #f0f0f0;
+          border: 1px solid #ccc;
+          padding: 10px;
+          font-family: monospace;
+      }
+  </style>
 </head>
 <body>
-    <h1>Overburn's ChatGPT Webserver</h1>
-    <div id="chat_history"></div>
-    <div id="chat_input_container">
-        <textarea id="user_message"></textarea>
-        <button id="send_button" onclick="sendMessage()">Send</button>
-    </div>
-    <script>
-        var chatHistory = [];
+  <h1>Overburn's ChatGPT Webserver</h1>
+  <div id="chat_history"></div>
+  <button id="reset_button" onclick="resetChatHistory()">Reset Chat History</button>
+  <div id="chat_input_container">
+      <textarea id="user_message"></textarea>
+      <button id="send_button" onclick="sendMessage()">Send</button>
+  </div>
+  <script>
+    var chatHistory = [];
 
-        function render_message(input_message) {
-            // Use a regular expression to match code blocks wrapped in triple backticks
-            var regex = /```([\s\S]*?)```/g;
-            var parts = input_message.split(regex);
-            
-            // Process each part of the message
-            var output_message = parts.map(function(part, index) {
-                // If the index is odd, then it's a code block
-                if (index % 2 === 1) {
-                    // Escape any HTML entities in the code block
-                    var escapedCode = part.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    return '<pre><code>' + escapedCode + '</code></pre>';
-                } else {
-                    // Replace new lines with <br> tags in the non-code parts
-                    return part.replace(/\n/g, '<br>');
-                }
-            }).join('');
+    // Load chat history from local storage when the page is loaded
+    window.addEventListener('load', function () {
+      var chatHistoryString = localStorage.getItem('chatHistory');
+      chatHistory = chatHistoryString ? JSON.parse(chatHistoryString) : [];
+      
+      // Render previous chat history
+      var chatHistoryHTML = "";
+      for (var i = 0; i < chatHistory.length; i++) {
+        chatHistoryHTML += render_single_message(chatHistory[i]);
+      }
+      document.getElementById('chat_history').innerHTML = chatHistoryHTML;
+    });
 
-            return output_message;
+    function resetChatHistory() {
+      localStorage.removeItem('chatHistory');  // Remove chatHistory from local storage
+      chatHistory = [];  // Clear the chatHistory variable
+      document.getElementById('chat_history').innerHTML = '';  // Clear the chat display
+    }
+
+    function render_message(input_message) {
+      // Use a regular expression to match code blocks wrapped in triple backticks
+      var regex = /```([\s\S]*?)```/g;
+      var parts = input_message.split(regex);
+      
+      // Process each part of the message
+      var output_message = parts.map(function(part, index) {
+          // If the index is odd, then it's a code block
+          if (index % 2 === 1) {
+              // Escape any HTML entities in the code block
+              var escapedCode = part.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+              return '<pre><code>' + escapedCode + '</code></pre>';
+          } else {
+              // Replace new lines with <br> tags in the non-code parts
+              return part.replace(/\n/g, '<br>');
+          }
+      }).join('');
+
+      return output_message;
+    }
+
+    // Function to render a single message
+    function render_single_message(message) {
+      var roleName = message.role === 'user' ? 'User' : 'Bot';
+      var className = message.role === 'user' ? 'user-name' : 'bot-name';
+      var renderedContent = render_message(message.content);
+      return `<p><span class="${className}">${roleName}:</span> ${renderedContent}</p>`;
+    }
+
+    function sendMessage() {
+      var userMessageContent = document.getElementById('user_message').value;
+      var userMessage = { role: 'user', content: userMessageContent };
+      chatHistory.push(userMessage);
+
+      fetch('/chat', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ user_message: chatHistory })
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.bot_message.error) {
+            alert(data.bot_message.error);
+          } else {
+            var botMessage = { role: 'assistant', content: data.bot_message.content };
+            chatHistory.push(botMessage); // Add the bot's message to chatHistory
+
+            // Save to local storage
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory)); // Save here
+    
+            var userMessageContent = '<p> <span class="user-name">User:</span> ' + render_message(userMessage.content) + '</p>';
+            var botMessageContent = '<p> <span class="bot-name">Bot:</span> ' + render_message(data.bot_message.content) + '</p>';
+            document.getElementById('chat_history').innerHTML += userMessageContent + botMessageContent;
         }
+      })
+      .catch(error => {
+          console.error(error);
+      });
 
-        function sendMessage() {
-            var userMessageContent = document.getElementById('user_message').value;
-            var userMessage = { role: 'user', content: userMessageContent };
-            chatHistory.push(userMessage);
-
-            fetch('/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ user_message: chatHistory })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.bot_message.error) {
-                    alert(data.bot_message.error);
-                } else {
-                    var userMessageContent = '<p> <span class="user-name">User:</span> ' + render_message(userMessage.content) + '</p>';
-                    var botMessageContent = '<p> <span class="bot-name">Bot:</span> ' + render_message(data.bot_message.content) + '</p>';
-                    document.getElementById('chat_history').innerHTML += userMessageContent + botMessageContent;
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            });
-
-            document.getElementById('user_message').value = '';
-        }
-    </script>
+      document.getElementById('user_message').value = '';
+    }
+  </script>
 </body>
 </html>
