@@ -4,7 +4,6 @@ from openai.error import OpenAIError
 
 app = Flask(__name__)
 
-##############################################
 with open("api-key.txt", 'r') as file:
     openai_api_key = file.read()
 openai.api_key = openai_api_key
@@ -12,14 +11,13 @@ openai.api_key = openai_api_key
 def process_message(chat_history):
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-3.5-turbo-16k",
             messages=chat_history  
         )
         ai_message = {"role": "assistant", "content": response['choices'][0]['message']['content']}
         return ai_message
     except OpenAIError as e:
         return {"error": str(e)}
-##############################################
 
 @app.route('/')
 def index():
