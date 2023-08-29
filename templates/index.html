@@ -28,101 +28,209 @@
           padding: 10px;
           font-family: monospace;
       }
+      #old_chats_list {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 200px;
+          border-left: 1px solid #ccc;
+          padding: 10px;
+      }
+      .old-chat-title {
+          cursor: pointer;
+          color: blue;
+          text-decoration: underline;
+      }
+      .highlighted-chat {
+          background-color: #f0f0f0;
+      }
+
+      #old_chats_list {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 200px;
+        max-height: 100vh; /* Adjust based on your layout */
+        overflow-y: auto;  /* Enable vertical scrolling */
+        border-left: 1px solid #ccc;
+        padding: 10px;
+      }
   </style>
 </head>
 <body>
   <h1>Overburn's ChatGPT Webserver</h1>
+  <div id="old_chats_list">
+    <h3>Old Chats</h3>
+  </div>
   <div id="chat_history"></div>
-  <button id="reset_button" onclick="resetChatHistory()">Reset Chat History</button>
+  <button id="reset_button" onclick="resetChatHistory()">New Chat</button>
   <div id="chat_input_container">
       <textarea id="user_message"></textarea>
       <button id="send_button" onclick="sendMessage()">Send</button>
   </div>
   <script>
-    var chatHistory = [];
 
-    // Load chat history from local storage when the page is loaded
-    window.addEventListener('load', function () {
-      var chatHistoryString = localStorage.getItem('chatHistory');
-      chatHistory = chatHistoryString ? JSON.parse(chatHistoryString) : [];
-      
-      // Render previous chat history
-      var chatHistoryHTML = "";
-      for (var i = 0; i < chatHistory.length; i++) {
-        chatHistoryHTML += render_single_message(chatHistory[i]);
-      }
-      document.getElementById('chat_history').innerHTML = chatHistoryHTML;
+var chatHistory = [];
+var oldChats = [];
+var currentOldChatIndex = null;
+
+window.addEventListener('load', function () {
+  loadChatHistory();
+  populateOldChats();
+});
+
+function loadChatHistory() {
+  var chatHistoryString = localStorage.getItem('chatHistory');
+  chatHistory = chatHistoryString ? JSON.parse(chatHistoryString) : [];
+
+  renderChatHistory();
+}
+
+function renderChatHistory() {
+  var chatHistoryContainer = document.getElementById('chat_history');
+  let htmlString = '';
+
+  chatHistory.forEach(function (message) {
+    htmlString += renderSingleMessage(message);
+  });
+
+  chatHistoryContainer.innerHTML = htmlString;
+}
+
+function resetChatHistory() {
+  if (currentOldChatIndex !== null) {
+    oldChats[currentOldChatIndex] = chatHistory;
+  } else {
+    oldChats.push(chatHistory);
+  }
+  localStorage.setItem('oldChats', JSON.stringify(oldChats));
+  
+  chatHistory = [];
+  localStorage.removeItem('chatHistory');
+  currentOldChatIndex = null;
+  renderChatHistory();
+  populateOldChats();
+}
+function highlightSelectedChat(index) {
+  // Remove highlighting from all old chats
+  document.querySelectorAll('.old-chat-title').forEach(function(chatTitle) {
+    chatTitle.classList.remove('highlighted-chat');
+  });
+
+  // Add highlighting to the selected chat
+  document.querySelectorAll('.old-chat-title')[index].classList.add('highlighted-chat');
+}
+
+function populateOldChats() {
+  var oldChatsString = localStorage.getItem('oldChats');
+  oldChats = oldChatsString ? JSON.parse(oldChatsString) : [];
+
+  var oldChatsContainer = document.getElementById('old_chats_list');
+  oldChatsContainer.innerHTML = '<h3>Old Chats</h3>';
+
+  oldChats.forEach(function (_, index) {
+    var chatContainer = document.createElement('div');
+    var chatTitle = document.createElement('div');
+    chatTitle.classList.add('old-chat-title');
+    chatTitle.textContent = 'Chat ' + (index + 1);
+    chatTitle.onclick = function () {
+      loadOldChat(index);
+    };
+
+    var deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Delete';
+    deleteButton.onclick = function () {
+      deleteOldChat(index);
+    };
+
+    chatContainer.appendChild(chatTitle);
+    chatContainer.appendChild(deleteButton);
+    oldChatsContainer.appendChild(chatContainer);
+  });
+}
+
+function deleteOldChat(index) {
+  oldChats.splice(index, 1);  // Remove the chat at the given index
+  localStorage.setItem('oldChats', JSON.stringify(oldChats));  // Update local storage
+  populateOldChats();  // Refresh the list of old chats
+}
+
+function loadOldChat(index) {
+  // Save the current chat before loading the old chat
+  if (currentOldChatIndex !== null) {
+    oldChats[currentOldChatIndex] = chatHistory;
+  } else {
+    oldChats.push(chatHistory);
+  }
+
+  // Now load the old chat
+  chatHistory = oldChats[index];
+  currentOldChatIndex = index; // Update the index to the newly loaded old chat
+
+  // Save the old chats array to local storage
+  localStorage.setItem('oldChats', JSON.stringify(oldChats));
+
+  highlightSelectedChat(index);
+
+  // Render the new chat history
+  renderChatHistory();
+}
+
+
+function render_codeblocks(input_message) {
+  var regex = /```([\s\S]*?)```/g;
+  var parts = input_message.split(regex);
+
+  var output_message = parts.map(function (part, index) {
+    if (index % 2 === 1) {
+      var escapedCode = part.replace(/</g, "<").replace(/>/g, ">");
+      return '<pre><code>' + escapedCode + '</code></pre>';
+    } else {
+      return part.replace(/\n/g, '<br>');
+    }
+  }).join('');
+
+  return output_message;
+}
+
+function renderSingleMessage(message) {
+  var roleName = message.role === 'user' ? 'User' : 'Bot';
+  var className = message.role === 'user' ? 'user-name' : 'bot-name';
+  var renderedContent = render_codeblocks(message.content);
+  return `<p><span class="${className}">${roleName}:</span> ${renderedContent}</p>`;
+}
+
+async function sendMessage() {
+  var userMessageContent = document.getElementById('user_message').value;
+  var userMessage = { role: 'user', content: userMessageContent };
+  chatHistory.push(userMessage);  // Append user message to chat history
+
+  try {
+    const response = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_message: chatHistory })
     });
 
-    function resetChatHistory() {
-      localStorage.removeItem('chatHistory');  // Remove chatHistory from local storage
-      chatHistory = [];  // Clear the chatHistory variable
-      document.getElementById('chat_history').innerHTML = '';  // Clear the chat display
+    const data = await response.json();
+
+    if (data.bot_message.error) {
+      alert(data.bot_message.error);
+    } else {
+      const botMessage = { role: 'assistant', content: data.bot_message.content };
+      chatHistory.push(botMessage);
+      localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+      renderChatHistory();
     }
 
-    function render_message(input_message) {
-      // Use a regular expression to match code blocks wrapped in triple backticks
-      var regex = /```([\s\S]*?)```/g;
-      var parts = input_message.split(regex);
-      
-      // Process each part of the message
-      var output_message = parts.map(function(part, index) {
-          // If the index is odd, then it's a code block
-          if (index % 2 === 1) {
-              // Escape any HTML entities in the code block
-              var escapedCode = part.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-              return '<pre><code>' + escapedCode + '</code></pre>';
-          } else {
-              // Replace new lines with <br> tags in the non-code parts
-              return part.replace(/\n/g, '<br>');
-          }
-      }).join('');
+  } catch (error) {
+    console.error(error);
+  }
 
-      return output_message;
-    }
+  document.getElementById('user_message').value = '';
+}
 
-    // Function to render a single message
-    function render_single_message(message) {
-      var roleName = message.role === 'user' ? 'User' : 'Bot';
-      var className = message.role === 'user' ? 'user-name' : 'bot-name';
-      var renderedContent = render_message(message.content);
-      return `<p><span class="${className}">${roleName}:</span> ${renderedContent}</p>`;
-    }
 
-    function sendMessage() {
-      var userMessageContent = document.getElementById('user_message').value;
-      var userMessage = { role: 'user', content: userMessageContent };
-      chatHistory.push(userMessage);
-
-      fetch('/chat', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ user_message: chatHistory })
-      })
-      .then(response => response.json())
-      .then(data => {
-          if (data.bot_message.error) {
-            alert(data.bot_message.error);
-          } else {
-            var botMessage = { role: 'assistant', content: data.bot_message.content };
-            chatHistory.push(botMessage); // Add the bot's message to chatHistory
-
-            // Save to local storage
-            localStorage.setItem('chatHistory', JSON.stringify(chatHistory)); // Save here
-    
-            var userMessageContent = '<p> <span class="user-name">User:</span> ' + render_message(userMessage.content) + '</p>';
-            var botMessageContent = '<p> <span class="bot-name">Bot:</span> ' + render_message(data.bot_message.content) + '</p>';
-            document.getElementById('chat_history').innerHTML += userMessageContent + botMessageContent;
-        }
-      })
-      .catch(error => {
-          console.error(error);
-      });
-
-      document.getElementById('user_message').value = '';
-    }
   </script>
 </body>
 </html>
