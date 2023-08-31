@@ -1,0 +1,61 @@
+#user_message {
+    width: 80%; /* You can adjust this value */
+    height: 4em; /* Height for 4 lines */
+}
+#send_button {
+    width: 80px;  /* Fixed width for the Send button */
+    display: inline; /* Display button inline with textarea */
+}
+#chat_input_container {
+    display: flex;  /* Use flex layout to align textarea and button */
+    max-width: calc(100% - 290px);  /* 200px for the chat list, 80px for the Send button, and 10px extra padding */
+    margin-right: 210px;  /* Aligns with the edge of the #old_chats_list */
+}
+#chat_history {
+    max-width: calc(100% - 210px);  /* 200px for the chat list, 10px for extra padding */
+    overflow-wrap: break-word;  /* Breaks the word and wraps onto the next line */
+}
+.user-name {
+    color: red;
+}
+.bot-name {
+    color: blue;
+}
+pre code {
+    display: block;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-family: monospace;
+    overflow-x: auto;  /* Add this line */
+}
+#old_chats_list {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    border-left: 1px solid #ccc;
+    padding: 10px;
+}
+.old-chat-title {
+    cursor: pointer;
+    color: blue;
+    text-decoration: underline;
+}
+.highlighted-chat {
+    background-color: #f0f0f0;
+}
+
+#old_chats_list {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    max-height: 100vh; /* Adjust based on your layout */
+    overflow-y: auto;  /* Enable vertical scrolling */
+    border-left: 1px solid #ccc;
+    padding: 10px;
+}
+#reset_button {
+    margin-top: 20px;  /* Adjust the space as needed */
+}
