@@ -61,119 +61,138 @@
   <h1>Overburn's ChatGPT Webserver</h1>
   <div id="old_chats_list">
     <h3>Old Chats</h3>
+    <button id="reset_button" onclick="addNewChat()">New Chat</button>
+    <button id="delete_button" onclick="deleteCurrentChat()">Delete Current Chat</button>
+    <button id="rename_button" onclick="renameCurrentChat()">Rename Current Chat</button>
   </div>
   <div id="chat_history"></div>
-  <button id="reset_button" onclick="resetChatHistory()">New Chat</button>
   <div id="chat_input_container">
       <textarea id="user_message"></textarea>
       <button id="send_button" onclick="sendMessage()">Send</button>
   </div>
   <script>
 
-var chatHistory = [];
-var oldChats = [];
-var currentOldChatIndex = null;
+var chatHistories = [{ title: "Default Chat", messages: [] }];
+var currentChatIndex = null;
 
 window.addEventListener('load', function () {
-  loadChatHistory();
+  currentChatIndex = 0;
   populateOldChats();
+  renderChatHistory(currentChatIndex);
 });
-
-function loadChatHistory() {
-  var chatHistoryString = localStorage.getItem('chatHistory');
-  chatHistory = chatHistoryString ? JSON.parse(chatHistoryString) : [];
-
-  renderChatHistory();
-}
 
 function renderChatHistory() {
   var chatHistoryContainer = document.getElementById('chat_history');
   let htmlString = '';
 
-  chatHistory.forEach(function (message) {
-    htmlString += renderSingleMessage(message);
-  });
+  if (currentChatIndex !== null && chatHistories[currentChatIndex].messages) {
+    chatHistories[currentChatIndex].messages.forEach(function (message) {
+      htmlString += renderSingleMessage(message);
+    });
+  }
 
   chatHistoryContainer.innerHTML = htmlString;
 }
 
-function resetChatHistory() {
-  if (currentOldChatIndex !== null) {
-    oldChats[currentOldChatIndex] = chatHistory;
-  } else {
-    oldChats.push(chatHistory);
-  }
-  localStorage.setItem('oldChats', JSON.stringify(oldChats));
+function renameCurrentChat() {
+  var newName = prompt("Enter the new name for the current chat:", chatHistories[currentChatIndex].title);
   
-  chatHistory = [];
-  localStorage.removeItem('chatHistory');
-  currentOldChatIndex = null;
-  renderChatHistory();
-  populateOldChats();
+  if (newName === null) {
+    // User cancelled the prompt
+    return;
+  }
+  
+  if (newName === "") {
+    alert("Chat name cannot be empty.");
+    return;
+  }
+
+  chatHistories[currentChatIndex].title = newName;
+  localStorage.setItem('oldChats', JSON.stringify(chatHistories)); // Update local storage
+  populateOldChats();  // Refresh the list of old chats
 }
-function highlightSelectedChat(index) {
+
+function addNewChat() {
+  currentChatIndex = chatHistories.length;
+  chatHistories.push({ title: "New Chat", messages: [] });
+
+  localStorage.setItem('oldChats', JSON.stringify(chatHistories));
+  
+  populateOldChats();
+  renderChatHistory(currentChatIndex);
+}
+
+function highlightSelectedChat() {
   // Remove highlighting from all old chats
   document.querySelectorAll('.old-chat-title').forEach(function(chatTitle) {
     chatTitle.classList.remove('highlighted-chat');
   });
 
   // Add highlighting to the selected chat
-  document.querySelectorAll('.old-chat-title')[index].classList.add('highlighted-chat');
+  document.querySelectorAll('.old-chat-title')[currentChatIndex].classList.add('highlighted-chat');
 }
 
 function populateOldChats() {
   var oldChatsString = localStorage.getItem('oldChats');
-  oldChats = oldChatsString ? JSON.parse(oldChatsString) : [];
+  chatHistories = oldChatsString ? JSON.parse(oldChatsString) : [];
 
   var oldChatsContainer = document.getElementById('old_chats_list');
   oldChatsContainer.innerHTML = '<h3>Old Chats</h3>';
 
-  oldChats.forEach(function (_, index) {
+  chatHistories.forEach(function (chat, index) {
     var chatContainer = document.createElement('div');
     var chatTitle = document.createElement('div');
     chatTitle.classList.add('old-chat-title');
-    chatTitle.textContent = 'Chat ' + (index + 1);
+    chatTitle.textContent = chat.title;
     chatTitle.onclick = function () {
       loadOldChat(index);
     };
 
-    var deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Delete';
-    deleteButton.onclick = function () {
-      deleteOldChat(index);
-    };
-
     chatContainer.appendChild(chatTitle);
-    chatContainer.appendChild(deleteButton);
     oldChatsContainer.appendChild(chatContainer);
   });
+
+  // Add management buttons
+  var newChatButton = document.createElement('button');
+  newChatButton.id = 'reset_button';
+  newChatButton.textContent = 'New Chat';
+  newChatButton.onclick = addNewChat;
+
+  var deleteChatButton = document.createElement('button');
+  deleteChatButton.id = 'delete_button';
+  deleteChatButton.textContent = 'Delete Current Chat';
+  deleteChatButton.onclick = deleteCurrentChat;
+
+  var renameChatButton = document.createElement('button');
+  renameChatButton.id = 'rename_button';
+  renameChatButton.textContent = 'Rename Current Chat';
+  renameChatButton.onclick = renameCurrentChat;
+
+  oldChatsContainer.appendChild(newChatButton);
+  oldChatsContainer.appendChild(deleteChatButton);
+  oldChatsContainer.appendChild(renameChatButton);
+
+  highlightSelectedChat();
 }
 
-function deleteOldChat(index) {
-  oldChats.splice(index, 1);  // Remove the chat at the given index
-  localStorage.setItem('oldChats', JSON.stringify(oldChats));  // Update local storage
+function deleteCurrentChat() {
+  if (chatHistories.length <= 1) {
+    alert("You can't delete the last chat.");
+    return;
+  }
+  
+  chatHistories.splice(currentChatIndex, 1);  // Remove the chat at the current index
+  currentChatIndex = 0;  // Reset to the first chat
+  localStorage.setItem('oldChats', JSON.stringify(chatHistories));  // Update local storage
   populateOldChats();  // Refresh the list of old chats
+  loadOldChat(currentChatIndex);  // Load the first chat
 }
+
 
 function loadOldChat(index) {
-  // Save the current chat before loading the old chat
-  if (currentOldChatIndex !== null) {
-    oldChats[currentOldChatIndex] = chatHistory;
-  } else {
-    oldChats.push(chatHistory);
-  }
-
-  // Now load the old chat
-  chatHistory = oldChats[index];
-  currentOldChatIndex = index; // Update the index to the newly loaded old chat
-
-  // Save the old chats array to local storage
-  localStorage.setItem('oldChats', JSON.stringify(oldChats));
-
-  highlightSelectedChat(index);
-
-  // Render the new chat history
+  currentChatIndex = index; // Update the index to the newly loaded old chat
   renderChatHistory();
+  highlightSelectedChat();
 }
 
 
@@ -203,13 +222,15 @@ function renderSingleMessage(message) {
 async function sendMessage() {
   var userMessageContent = document.getElementById('user_message').value;
   var userMessage = { role: 'user', content: userMessageContent };
-  chatHistory.push(userMessage);  // Append user message to chat history
 
+  // Append to the existing chat
+  chatHistories[currentChatIndex].messages.push(userMessage); 
+  
   try {
     const response = await fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_message: chatHistory })
+      body: JSON.stringify({ user_message: chatHistories[currentChatIndex].messages })
     });
 
     const data = await response.json();
@@ -218,8 +239,8 @@ async function sendMessage() {
       alert(data.bot_message.error);
     } else {
       const botMessage = { role: 'assistant', content: data.bot_message.content };
-      chatHistory.push(botMessage);
-      localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+      chatHistories[currentChatIndex].messages.push(botMessage);
+      localStorage.setItem('oldChats', JSON.stringify(chatHistories));
       renderChatHistory();
     }
 
