@@ -3,17 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chatbot</title>
+  <title>Overburn's ChatGPT Webserver</title>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
   <h1>Overburn's ChatGPT Webserver</h1>
-  <div id="old_chats_list">
-    <h3>Old Chats</h3>
-    <button id="reset_button" onclick="addNewChat()">New Chat</button>
-    <button id="delete_button" onclick="deleteCurrentChat()">Delete Current Chat</button>
-    <button id="rename_button" onclick="renameCurrentChat()">Rename Current Chat</button>
-  </div>
+  <div id="old_chats_list"></div>
   <div id="chat_history"></div>
   <div id="chat_input_container">
       <textarea id="user_message"></textarea>
