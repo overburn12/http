@@ -10,10 +10,17 @@
           height: 4em; /* Height for 4 lines */
       }
       #send_button {
+          width: 80px;  /* Fixed width for the Send button */
           display: inline; /* Display button inline with textarea */
       }
       #chat_input_container {
-          display: flex; /* Use flex layout to align textarea and button */
+          display: flex;  /* Use flex layout to align textarea and button */
+          max-width: calc(100% - 290px);  /* 200px for the chat list, 80px for the Send button, and 10px extra padding */
+          margin-right: 210px;  /* Aligns with the edge of the #old_chats_list */
+      }
+      #chat_history {
+          max-width: calc(100% - 210px);  /* 200px for the chat list, 10px for extra padding */
+          overflow-wrap: break-word;  /* Breaks the word and wraps onto the next line */
       }
       .user-name {
           color: red;
@@ -27,6 +34,7 @@
           border: 1px solid #ccc;
           padding: 10px;
           font-family: monospace;
+          overflow-x: auto;  /* Add this line */
       }
       #old_chats_list {
           position: absolute;
