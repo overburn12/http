@@ -122,15 +122,15 @@ function clearLocalStorage() {
 
 function deleteCurrentChat() {
   if (chatHistories.length <= 1) {
-    alert("You can't delete the last chat.");
-    return;
+    clearLocalStorage();
+  } else{
+    chatHistories.splice(currentChatIndex, 1);  // Remove the chat at the current index
+    currentChatIndex -= 1;  
+    populateChatList();  // Refresh the list of old chats
+    loadChat(currentChatIndex);  // Load the first chat
   }
-  
-  chatHistories.splice(currentChatIndex, 1);  // Remove the chat at the current index
-  currentChatIndex = 0;  // Reset to the first chat
+
   localStorage.setItem('oldChats', JSON.stringify(chatHistories));  // Update local storage
-  populateChatList();  // Refresh the list of old chats
-  loadChat(currentChatIndex);  // Load the first chat
 }
 
 function loadChat(index) {
