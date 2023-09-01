@@ -1,10 +1,10 @@
 
-var chatHistories = [{ title: "Default Chat", messages: [] }];
+var chatHistories = [];
 var currentChatIndex = null;
 
 window.addEventListener('load', function () {
   currentChatIndex = 0;
-  populateOldChats();
+  populateChatList();
   renderChatHistory(currentChatIndex);
 });
 
@@ -36,7 +36,7 @@ function renameCurrentChat() {
 
   chatHistories[currentChatIndex].title = newName;
   localStorage.setItem('oldChats', JSON.stringify(chatHistories)); // Update local storage
-  populateOldChats();  // Refresh the list of old chats
+  populateChatList();  // Refresh the list of old chats
 }
 
 function addNewChat() {
@@ -45,7 +45,7 @@ function addNewChat() {
 
   localStorage.setItem('oldChats', JSON.stringify(chatHistories));
   
-  populateOldChats();
+  populateChatList();
   renderChatHistory(currentChatIndex);
 }
 
@@ -59,12 +59,16 @@ function highlightSelectedChat() {
   document.querySelectorAll('.old-chat-title')[currentChatIndex].classList.add('highlighted-chat');
 }
 
-function populateOldChats() {
+function populateChatList() {
   var oldChatsString = localStorage.getItem('oldChats');
   chatHistories = oldChatsString ? JSON.parse(oldChatsString) : [];
 
+  if (chatHistories.length === 0) {
+    chatHistories = [{ title: "New Chat", messages: [] }];
+  }
+
   var oldChatsContainer = document.getElementById('old_chats_list');
-  oldChatsContainer.innerHTML = '<h3>Old Chats</h3>';
+  oldChatsContainer.innerHTML = '<h3>Chat List</h3>';
 
   chatHistories.forEach(function (chat, index) {
     var chatContainer = document.createElement('div');
@@ -72,7 +76,7 @@ function populateOldChats() {
     chatTitle.classList.add('old-chat-title');
     chatTitle.textContent = chat.title;
     chatTitle.onclick = function () {
-      loadOldChat(index);
+      loadChat(index);
     };
 
     chatContainer.appendChild(chatTitle);
@@ -82,24 +86,38 @@ function populateOldChats() {
   // Add management buttons
   var newChatButton = document.createElement('button');
   newChatButton.id = 'reset_button';
-  newChatButton.textContent = 'New Chat';
+  newChatButton.textContent = 'New';
   newChatButton.onclick = addNewChat;
 
   var deleteChatButton = document.createElement('button');
   deleteChatButton.id = 'delete_button';
-  deleteChatButton.textContent = 'Delete Current Chat';
+  deleteChatButton.textContent = 'Delete';
   deleteChatButton.onclick = deleteCurrentChat;
 
   var renameChatButton = document.createElement('button');
   renameChatButton.id = 'rename_button';
-  renameChatButton.textContent = 'Rename Current Chat';
+  renameChatButton.textContent = 'Rename';
   renameChatButton.onclick = renameCurrentChat;
 
+  var clearStorageButton = document.createElement('button');
+  clearStorageButton.id = 'clear_storage_button';
+  clearStorageButton.textContent = 'Delete All';
+  clearStorageButton.onclick = clearLocalStorage;
+
   oldChatsContainer.appendChild(newChatButton);
-  oldChatsContainer.appendChild(deleteChatButton);
   oldChatsContainer.appendChild(renameChatButton);
+  oldChatsContainer.appendChild(deleteChatButton);
+  oldChatsContainer.appendChild(clearStorageButton);
 
   highlightSelectedChat();
+}
+
+function clearLocalStorage() {
+  localStorage.removeItem('oldChats');
+  chatHistories = [];
+  currentChatIndex = 0;
+  populateChatList();
+  renderChatHistory();
 }
 
 function deleteCurrentChat() {
@@ -111,12 +129,11 @@ function deleteCurrentChat() {
   chatHistories.splice(currentChatIndex, 1);  // Remove the chat at the current index
   currentChatIndex = 0;  // Reset to the first chat
   localStorage.setItem('oldChats', JSON.stringify(chatHistories));  // Update local storage
-  populateOldChats();  // Refresh the list of old chats
-  loadOldChat(currentChatIndex);  // Load the first chat
+  populateChatList();  // Refresh the list of old chats
+  loadChat(currentChatIndex);  // Load the first chat
 }
 
-
-function loadOldChat(index) {
+function loadChat(index) {
   currentChatIndex = index; // Update the index to the newly loaded old chat
   renderChatHistory();
   highlightSelectedChat();
@@ -149,9 +166,11 @@ function renderSingleMessage(message) {
 async function sendMessage() {
   var userMessageContent = document.getElementById('user_message').value;
   var userMessage = { role: 'user', content: userMessageContent };
-
+  
   // Append to the existing chat
   chatHistories[currentChatIndex].messages.push(userMessage); 
+  // clear the text field
+  document.getElementById('user_message').value = '';
   
   try {
     const response = await fetch('/chat', {
@@ -175,6 +194,5 @@ async function sendMessage() {
     console.error(error);
   }
 
-  document.getElementById('user_message').value = '';
 }
 
