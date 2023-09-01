@@ -1,12 +1,13 @@
 import openai
+import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify
 from openai.error import OpenAIError
 
 app = Flask(__name__)
 
-with open("api-key.txt", 'r') as file:
-    openai_api_key = file.read()
-openai.api_key = openai_api_key
+load_dotenv()
+openai.api_key = os.getenv("MY_API_KEY")
 
 def process_message(chat_history):
     try:
