@@ -6,7 +6,8 @@ from openai.error import OpenAIError
 
 app = Flask(__name__)
 
-load_dotenv()
+
+load_dotenv() 
 openai.api_key = os.getenv("MY_API_KEY")
 
 def process_message(chat_history):
@@ -31,5 +32,5 @@ def chat():
     return jsonify({ 'bot_message': bot_message })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000) 
+    app.run(host='0.0.0.0', port=80) 
     #app.run(host='0.0.0.0', port=5000, ssl_context=('cert.pem', 'key.pem')) 
