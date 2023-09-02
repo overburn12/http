@@ -171,9 +171,13 @@ function render_codeblocks(input_message) {
 function renderSingleMessage(message) {
   var roleName = message.role === 'user' ? 'User' : 'Bot';
   var className = message.role === 'user' ? 'user-name' : 'bot-name';
+  var messageLineClass = message.role === 'user' ? 'user-message-line' : 'bot-message-line';  // New line
   var renderedContent = render_codeblocks(message.content);
-  return `<p><span class="${className}">${roleName}:</span> ${renderedContent}</p>`;
+  
+  // Include messageLineClass in the surrounding <div> element
+  return `<div class="${messageLineClass}"><p><span class="${className}">${roleName}:</span> ${renderedContent}</p></div>`;  // Updated line
 }
+
 
 async function sendMessage() {
   var userMessageElement = document.getElementById('user_message');

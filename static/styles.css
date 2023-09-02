@@ -54,6 +54,22 @@ body.loading {
 .bot-name {
     color: blue;
 }
+.user-message-line {
+    background-color: #dfdede; /* Gray background */
+}
+
+.bot-message-line {
+    background-color: #ffffff; /* White background */
+}
+.user-message-line, .bot-message-line {
+    margin: 0;
+    padding: 0;
+}
+
+.user-message-line p, .bot-message-line p {
+    margin: 0;
+    padding: 4px;  /* You can adjust this padding as needed */
+}
 pre code {
     display: block;
     background-color: #f0f0f0;
