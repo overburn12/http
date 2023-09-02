@@ -6,6 +6,15 @@ window.addEventListener('load', function () {
   currentChatIndex = 0;
   populateChatList();
   renderChatHistory(currentChatIndex);
+  
+  var user_message = document.getElementById('user_message'); // Define it here
+
+  user_message.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault(); // Prevent the default behavior of submitting a form
+      sendMessage(); // Call the sendMessage function to send the message
+    }
+  });
 });
 
 function renderChatHistory() {
@@ -19,6 +28,7 @@ function renderChatHistory() {
   }
 
   chatHistoryContainer.innerHTML = htmlString;
+  chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
 }
 
 function renameCurrentChat() {
@@ -122,16 +132,18 @@ function clearLocalStorage() {
 
 function deleteCurrentChat() {
   if (chatHistories.length <= 1) {
+    // If only one chat is left, clear local storage
     clearLocalStorage();
-  } else{
-    chatHistories.splice(currentChatIndex, 1);  // Remove the chat at the current index
-    currentChatIndex -= 1;  
-    populateChatList();  // Refresh the list of old chats
-    loadChat(currentChatIndex);  // Load the first chat
+    return;
   }
 
-  localStorage.setItem('oldChats', JSON.stringify(chatHistories));  // Update local storage
+  chatHistories.splice(currentChatIndex, 1);
+  loadChat(currentChatIndex > 0 ? currentChatIndex - 1 : currentChatIndex);
+
+  localStorage.setItem('oldChats', JSON.stringify(chatHistories));
+  populateChatList();
 }
+
 
 function loadChat(index) {
   currentChatIndex = index; // Update the index to the newly loaded old chat
@@ -164,14 +176,17 @@ function renderSingleMessage(message) {
 }
 
 async function sendMessage() {
-  var userMessageContent = document.getElementById('user_message').value;
+  var userMessageElement = document.getElementById('user_message');
+  var userMessageContent = userMessageElement.value;
   var userMessage = { role: 'user', content: userMessageContent };
   
-  // Append to the existing chat
+  // Add to existing chat
   chatHistories[currentChatIndex].messages.push(userMessage); 
-  // clear the text field
-  document.getElementById('user_message').value = '';
-  
+
+  // Add loading and locked classes
+  document.body.classList.add('loading');
+  userMessageElement.classList.add('locked');
+
   try {
     const response = await fetch('/chat', {
       method: 'POST',
@@ -182,17 +197,27 @@ async function sendMessage() {
     const data = await response.json();
 
     if (data.bot_message.error) {
-      alert(data.bot_message.error);
-    } else {
-      const botMessage = { role: 'assistant', content: data.bot_message.content };
-      chatHistories[currentChatIndex].messages.push(botMessage);
-      localStorage.setItem('oldChats', JSON.stringify(chatHistories));
-      renderChatHistory();
+      throw new Error(data.bot_message.error);
     }
 
+    const botMessage = { role: 'assistant', content: data.bot_message.content };
+    chatHistories[currentChatIndex].messages.push(botMessage);
+    localStorage.setItem('oldChats', JSON.stringify(chatHistories));
+    renderChatHistory();
+    
+    // Clear the text field if successful
+    userMessageElement.value = '';
   } catch (error) {
     console.error(error);
-  }
 
+    // Remove the last user message from the chat history if there's an error
+    chatHistories[currentChatIndex].messages.pop();
+    renderChatHistory();
+  } finally {
+    // Remove loading and locked classes
+    document.body.classList.remove('loading');
+    userMessageElement.classList.remove('locked');
+  }
 }
+
 
