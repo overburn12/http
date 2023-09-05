@@ -8,11 +8,8 @@ from openai.error import OpenAIError
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 # Custom log format
-log_format = (
-    '%(asctime)s [%(levelname)s] - ' 
-    'Client IP: %(client_ip)s - ' 
-    '%(message)s'
-)
+log_format = '[%(levelname)s] - Client IP: %(client_ip)s - Request Info - %s %s'
+
 
 load_dotenv() 
 openai.api_key = os.getenv("MY_API_KEY")
