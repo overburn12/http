@@ -45,6 +45,9 @@ with app.app_context():
     formatter = logging.Formatter(log_format)
     handler.setFormatter(formatter)
     app.logger.addHandler(handler)
+    app.logger.setLevel(logging.INFO)  # Ensure our logger captures INFO level logs
+    # Optionally, if you want to suppress the default Werkzeug logs:
+    logging.getLogger('werkzeug').setLevel(logging.ERROR) 
 
 # Update the logger to include client_ip
 @app.before_request
