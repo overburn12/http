@@ -7,9 +7,11 @@ from openai.error import OpenAIError
 
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
+ip_counts = {}  # Dictionary to store IP counts
+
 # Custom log format
 log_format = '[%(levelname)s] - Client IP: %(client_ip)s - Request Info - %s %s'
-
 
 load_dotenv() 
 openai.api_key = os.getenv("MY_API_KEY")
@@ -70,9 +72,25 @@ def favicon():
 
 @app.route('/chat', methods=['POST'])
 def chat():
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+
+    # Increment the count for the detected IP
+    if ip in ip_counts:
+        ip_counts[ip] += 1
+    else:
+        ip_counts[ip] = 1
+
     user_message = request.json['user_message']
     bot_message = process_message(user_message)
     return jsonify({ 'bot_message': bot_message })
+
+@app.route('/count', methods=['GET'])
+def count_connections():
+    return jsonify(ip_counts)
+
+@app.route('/view_count', methods=['GET'])
+def view_count_page():
+    return render_template('count.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080) 
