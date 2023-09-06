@@ -1,6 +1,4 @@
-import openai
-import os
-import logging
+import openai, json, os, logging
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from openai.error import OpenAIError
@@ -8,7 +6,6 @@ from openai.error import OpenAIError
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-ip_counts = {}  # Dictionary to store IP counts
 
 # Custom log format
 log_format = '[%(levelname)s] - Client IP: %(client_ip)s - Request Info - %s %s'
@@ -26,6 +23,19 @@ def process_message(chat_history):
         return ai_message
     except OpenAIError as e:
         return {"error": str(e)}
+
+def save_ip_counts():
+    with open('ip_counts.json', 'w') as f:
+        json.dump(ip_counts, f)
+
+def load_ip_counts():
+    try:
+        with open('ip_counts.json', 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+ip_counts = load_ip_counts()
 
 # Custom log format
 log_format = (
@@ -79,6 +89,8 @@ def chat():
         ip_counts[ip] += 1
     else:
         ip_counts[ip] = 1
+
+    save_ip_counts()  # Save counts to file after updating them
 
     user_message = request.json['user_message']
     bot_message = process_message(user_message)
