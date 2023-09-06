@@ -64,6 +64,7 @@ function addNewChat() {
 
   localStorage.setItem('oldChats', JSON.stringify(chatHistories));
   
+  clearFileInput();
   populateChatList();
   renderChatHistory(currentChatIndex);
 }
@@ -150,12 +151,14 @@ function deleteCurrentChat() {
   loadChat(currentChatIndex > 0 ? currentChatIndex - 1 : currentChatIndex);
 
   localStorage.setItem('oldChats', JSON.stringify(chatHistories));
+  clearFileInput();
   populateChatList();
 }
 
 
 function loadChat(index) {
   currentChatIndex = index; // Update the index to the newly loaded old chat
+  clearFileInput();
   renderChatHistory();
   highlightSelectedChat();
 }
@@ -187,6 +190,9 @@ function renderSingleMessage(message) {
   return `<div class="${messageLineClass}"><p><span class="${className}">${roleName}:</span> ${renderedContent}</p></div>`;  // Updated line
 }
 
+function clearFileInput() {
+  document.getElementById('codeFiles').value = '';
+}
 
 function handleFiles() {
   const files = document.getElementById('codeFiles').files;
@@ -207,6 +213,7 @@ function handleFiles() {
   setTimeout(() => {
       document.getElementById('uploadButton').textContent = 'Upload Files';
   }, 2000);
+  clearFileInput();
 }
 
 function readFileContent(file) {
