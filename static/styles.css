@@ -45,6 +45,25 @@
         height: 6em;  
     }
 }
+.file-content {
+    border: 1px solid #ddd;
+    margin: 5px 0;
+    background-color: #f5f5f5;
+}
+
+.file-header {
+    background-color: #ddd;
+    padding: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.file-body {
+    padding: 5px;
+    white-space: pre-wrap; /* Preserve whitespace and new lines */
+    font-family: monospace;
+}
+
 body.loading {
     cursor: progress;
 }

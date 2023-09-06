@@ -17,6 +17,15 @@ window.addEventListener('load', function () {
   });
 });
 
+function toggleFileContent(headerElement) {
+  const fileBody = headerElement.parentNode.querySelector('.file-body');
+  if (fileBody.style.display === 'none' || fileBody.style.display === '') {
+      fileBody.style.display = 'block';
+  } else {
+      fileBody.style.display = 'none';
+  }
+}
+
 function renderChatHistory() {
   var chatHistoryContainer = document.getElementById('chat_history');
   let htmlString = '';
@@ -177,6 +186,64 @@ function renderSingleMessage(message) {
   // Include messageLineClass in the surrounding <div> element
   return `<div class="${messageLineClass}"><p><span class="${className}">${roleName}:</span> ${renderedContent}</p></div>`;  // Updated line
 }
+
+
+function handleFiles() {
+  const files = document.getElementById('codeFiles').files;
+  if (files.length === 0) {
+      alert('Please select files to upload.');
+      return;
+  }
+  // Iterate over each file, read its content, and append it as a user message to chat history
+  Array.from(files).forEach(async (file) => {
+      const content = await readFileContent(file);
+      const formattedContent = formatFileContentForChat(file.name, content);
+      const userMessage = { role: 'user', content: formattedContent };
+      chatHistories[currentChatIndex].messages.push(userMessage);
+      renderChatHistory();
+  });
+  // Feedback for successful upload
+  document.getElementById('uploadButton').textContent = 'Files Uploaded!';
+  setTimeout(() => {
+      document.getElementById('uploadButton').textContent = 'Upload Files';
+  }, 2000);
+}
+
+function readFileContent(file) {
+  return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => resolve(event.target.result);
+      reader.onerror = (error) => reject(error);
+      reader.readAsText(file);
+  });
+}
+
+function escapeHtml(text) {
+  var map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+function formatFileContentForChat(filename, content) {
+  const escapedContent = escapeHtml(content);
+  return `
+      <div class="file-content">
+          <div class="file-header" onclick="toggleFileContent(this)">
+              ${filename}
+          </div>
+          <div class="file-body" style="display:none;">
+              ${escapedContent}
+          </div>
+      </div>
+  `;
+}
+
+
 
 
 async function sendMessage() {
