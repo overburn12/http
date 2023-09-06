@@ -60,20 +60,38 @@ with app.app_context():
 
 # Update the logger to include client_ip
 @app.before_request
+def count_misc_requests():
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    
+    if ip not in ip_counts:
+        ip_counts[ip] = {"chats": 0, "pageviews": 0, "misc": 0}
+
+    if request.endpoint not in ["chat", "index", "count_connections", "view_count_page", "favicon", "static"]:  # Add other known endpoints if needed
+        ip_counts[ip]["misc"] += 1
+
+@app.before_request        
 def before_request():
     client_ip = request.headers.get('X-Real-IP', request.remote_addr)
     request._client_ip = client_ip  # Attach IP to the request object
 
+
 # Inject client_ip into the logger's extra parameter
+@app.after_request
 def log_request_info(response):
     app.logger.info('Request Info - %s %s', request.method, request.url, extra={'client_ip': request._client_ip})
     return response
 
-app.after_request(log_request_info)
 
 @app.route('/')
 def index():
-    #client_ip = request.headers.get('X-Real-IP', request.remote_addr)
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    
+    if ip not in ip_counts:
+        ip_counts[ip] = {"chats": 0, "pageviews": 0, "misc": 0}
+    
+    ip_counts[ip]["pageviews"] += 1
+
+    save_ip_counts()
     return render_template('index.html')
 
 @app.route('/favicon.ico')
@@ -84,11 +102,10 @@ def favicon():
 def chat():
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
 
-    # Increment the count for the detected IP
-    if ip in ip_counts:
-        ip_counts[ip] += 1
-    else:
-        ip_counts[ip] = 1
+    if ip not in ip_counts:
+        ip_counts[ip] = {"chats": 0, "pageviews": 0, "misc": 0}
+    
+    ip_counts[ip]["chats"] += 1
 
     save_ip_counts()  # Save counts to file after updating them
 
@@ -106,4 +123,3 @@ def view_count_page():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080) 
-    #app.run(host='0.0.0.0', port=5000, ssl_context=('cert.pem', 'key.pem')) 
