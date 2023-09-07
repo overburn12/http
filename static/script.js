@@ -168,7 +168,8 @@ function render_codeblocks(input_message) {
 
   var output_message = parts.map(function (part, index) {
     if (index % 2 === 1) {
-      var escapedCode = part.replace(/</g, "<").replace(/>/g, ">");
+      // Escape the content inside the code blocks
+      var escapedCode = escapeHtml(part);
       return '<pre><code>' + escapedCode + '</code></pre>';
     } else {
       return part.replace(/\n/g, '<br>');
@@ -178,11 +179,12 @@ function render_codeblocks(input_message) {
   return output_message;
 }
 
+
 function renderSingleMessage(message) {
   var roleName = message.role === 'user' ? 'User' : 'Bot';
   var className = message.role === 'user' ? 'user-name' : 'bot-name';
   var messageLineClass = message.role === 'user' ? 'user-message-line' : 'bot-message-line';  // New line
-  var renderedContent = render_codeblocks(escapeHtml(message.content));
+  var renderedContent = render_codeblocks(message.content);
   
   // Include messageLineClass in the surrounding <div> element
   return `<div class="${messageLineClass}"><p><span class="${className}">${roleName}:</span> ${renderedContent}</p></div>`;  // Updated line
