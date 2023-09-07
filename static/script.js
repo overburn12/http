@@ -155,14 +155,12 @@ function deleteCurrentChat() {
   populateChatList();
 }
 
-
 function loadChat(index) {
   currentChatIndex = index; // Update the index to the newly loaded old chat
   clearFileInput();
   renderChatHistory();
   highlightSelectedChat();
 }
-
 
 function render_codeblocks(input_message) {
   var regex = /```([\s\S]*?)```/g;
@@ -184,7 +182,7 @@ function renderSingleMessage(message) {
   var roleName = message.role === 'user' ? 'User' : 'Bot';
   var className = message.role === 'user' ? 'user-name' : 'bot-name';
   var messageLineClass = message.role === 'user' ? 'user-message-line' : 'bot-message-line';  // New line
-  var renderedContent = render_codeblocks(message.content);
+  var renderedContent = render_codeblocks(escapeHtml(message.content));
   
   // Include messageLineClass in the surrounding <div> element
   return `<div class="${messageLineClass}"><p><span class="${className}">${roleName}:</span> ${renderedContent}</p></div>`;  // Updated line
@@ -250,9 +248,6 @@ function formatFileContentForChat(filename, content) {
   `;
 }
 
-
-
-
 async function sendMessage() {
   var userMessageElement = document.getElementById('user_message');
   var userMessageContent = userMessageElement.value;
@@ -297,5 +292,3 @@ async function sendMessage() {
     userMessageElement.classList.remove('locked');
   }
 }
-
-
