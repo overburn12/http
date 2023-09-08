@@ -123,13 +123,11 @@ def view_count_page():
 
 @app.route('/update', methods=['GET', 'POST'])
 def update_server():
-    # Execute 'git pull' command
-    subprocess.run('git pull', shell=True)
-
-    # Restart the server
-    subprocess.run('sudo systemctl restart flask.service', shell=True)
-
-    return 'Server updated successfully'
+    if request.method == 'POST':
+        subprocess.run('git pull', shell=True)
+        subprocess.run('sudo systemctl restart flask.service', shell=True)
+        return 'Server updated successfully'
+    return render_template('update.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080) 
