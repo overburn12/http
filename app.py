@@ -1,4 +1,4 @@
-import openai, json, os, logging
+import subprocess, openai, json, os, logging
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from openai.error import OpenAIError
@@ -120,6 +120,16 @@ def count_connections():
 @app.route('/view_count', methods=['GET'])
 def view_count_page():
     return render_template('count.html')
+
+@app.route('/update', methods=['POST'])
+def update_server():
+    # Execute 'git pull' command
+    subprocess.run('git pull', shell=True)
+
+    # Restart the server
+    subprocess.run('sudo systemctl restart your-server-service', shell=True)
+
+    return 'Server updated successfully'
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080) 
