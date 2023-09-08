@@ -121,13 +121,13 @@ def count_connections():
 def view_count_page():
     return render_template('count.html')
 
-@app.route('/update', methods=['POST'])
+@app.route('/update', methods=['GET', 'POST'])
 def update_server():
     # Execute 'git pull' command
     subprocess.run('git pull', shell=True)
 
     # Restart the server
-    subprocess.run('sudo systemctl restart your-server-service', shell=True)
+    subprocess.run('sudo systemctl restart flask.service', shell=True)
 
     return 'Server updated successfully'
 
