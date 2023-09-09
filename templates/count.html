@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,17 +11,50 @@
             margin: 20px auto;
             border-collapse: collapse;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid black;
             padding: 8px 12px;
         }
+
         th {
             background-color: #f2f2f2;
         }
     </style>
 </head>
+
 <body>
-    <table>
+    <h1>Chats</h1>
+    <table id="chatsTable">
+        <thead>
+            <tr>
+                <th>IP Address</th>
+                <th>Chats</th>
+                <th>Misc</th>
+            </tr>
+        </thead>
+        <tbody id="chatsTableBody">
+            <!-- Data will be populated here using JavaScript -->
+        </tbody>
+    </table>
+
+    <h1>Pageviews</h1>
+    <table id="pageviewsTable">
+        <thead>
+            <tr>
+                <th>IP Address</th>
+                <th>Pageviews</th>
+                <th>Misc</th>
+            </tr>
+        </thead>
+        <tbody id="pageviewsTableBody">
+            <!-- Data will be populated here using JavaScript -->
+        </tbody>
+    </table>
+
+    <h1>Other Connections</h1>
+    <table id="otherConnectionsTable">
         <thead>
             <tr>
                 <th>IP Address</th>
@@ -29,14 +63,16 @@
                 <th>Misc</th>
             </tr>
         </thead>
-        <tbody id="countsTableBody">
+        <tbody id="otherConnectionsTableBody">
             <!-- Data will be populated here using JavaScript -->
         </tbody>
     </table>
 
     <script>
         async function fetchAndDisplayCounts() {
-            const countsTableBody = document.getElementById('countsTableBody');
+            const chatsTableBody = document.getElementById('chatsTableBody');
+            const pageviewsTableBody = document.getElementById('pageviewsTableBody');
+            const otherConnectionsTableBody = document.getElementById('otherConnectionsTableBody');
 
             try {
                 const response = await fetch('/count');
@@ -51,7 +87,14 @@
                             <td>${data[ip].misc}</td>
                         </tr>
                     `;
-                    countsTableBody.innerHTML += row;
+
+                    if (data[ip].chats) {
+                        chatsTableBody.innerHTML += row;
+                    } else if (data[ip].pageviews) {
+                        pageviewsTableBody.innerHTML += row;
+                    } else {
+                        otherConnectionsTableBody.innerHTML += row;
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -61,4 +104,5 @@
         fetchAndDisplayCounts();
     </script>
 </body>
+
 </html>

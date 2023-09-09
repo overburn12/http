@@ -5,13 +5,6 @@
 </head>
 <body>
     <h1>Update Server</h1>
-    {% if output %}
-        <h2>Update Output:</h2>
-        <pre>
-            {{ output }}
-        </pre>
-    {% endif %}
-
     <form action="{{ url_for('update_server') }}" method="post">
         <input type="submit" value="Update Server">
     </form>

@@ -1,6 +1,6 @@
 import subprocess, openai, json, os, logging
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, send_from_directory, redirect, url_for
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from openai.error import OpenAIError
 
 app = Flask(__name__)
@@ -121,21 +121,21 @@ def count_connections():
 def view_count_page():
     return render_template('count.html')
 
+@app.route('/logs', methods=['GET'])
+def display_update_log():
+    with open('update.log', 'r') as logfile:
+        log_content = logfile.read()
+    return render_template('logs.html', log_content=log_content)
+
 @app.route('/update', methods=['GET', 'POST'])
 def update_server():
     if request.method == 'POST':
         # Execute the update process here (git pull, restart server, etc.)
         execute_update_process()
-        return redirect(url_for('logs'))
+        return 'server updated succesfully'
 
     # Render the update page template if accessed via GET request
     return render_template('update.html')
-
-@app.route('/logs')
-def logs():
-    with open('update.log', 'r') as logfile:
-        output = logfile.read()
-    return render_template('logs.html', output=output)
 
 def execute_update_process():
     commands = [
