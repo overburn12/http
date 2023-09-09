@@ -45,10 +45,7 @@ def favicon():
 def chat():
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
 
-    if ip not in ip_counts:
-        ip_counts[ip] = 0
-
-    ip_counts[ip] += 1
+    ip_counts[ip] = ip_counts.get(ip, 0) + 1
 
     save_ip_counts()  # Save counts to file after updating them
 
