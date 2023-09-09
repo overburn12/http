@@ -72,35 +72,39 @@
 
     <script>
         async function fetchAndDisplayCounts() {
-            const chatsTableBody = document.getElementById('chatsTableBody');
-            const pageviewsTableBody = document.getElementById('pageviewsTableBody');
-            const otherConnectionsTableBody = document.getElementById('otherConnectionsTableBody');
+        const chatsTableBody = document.getElementById('chatsTableBody');
+        const pageviewsTableBody = document.getElementById('pageviewsTableBody');
+        const otherConnectionsTableBody = document.getElementById('otherConnectionsTableBody');
 
-            try {
-                const response = await fetch('/count');
-                const data = await response.json();
+        try {
+            const response = await fetch('/count');
+            const data = await response.json();
 
-                for (const ip in data) {
-                    const row = `
-                        <tr>
-                            <td>${ip}</td>
-                            <td>${data[ip].chats}</td>
-                            <td>${data[ip].pageviews}</td>
-                            <td>${data[ip].misc}</td>
-                        </tr>
-                    `;
+            // Sort the data by count in descending order
+            const sortedData = Object.entries(data)
+            .sort(([, a], [, b]) => b.chats || b.pageviews || b.misc - a.chats || a.pageviews || a.misc);
 
-                    if (data[ip].chats) {
-                        chatsTableBody.innerHTML += row;
-                    } else if (data[ip].pageviews) {
-                        pageviewsTableBody.innerHTML += row;
-                    } else {
-                        otherConnectionsTableBody.innerHTML += row;
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
+            for (const [ip, counts] of sortedData) {
+            const row = `
+                <tr>
+                <td>${ip}</td>
+                <td>${counts.chats}</td>
+                <td>${counts.pageviews}</td>
+                <td>${counts.misc}</td>
+                </tr>
+            `;
+
+            if (counts.chats) {
+                chatsTableBody.innerHTML += row;
+            } else if (counts.pageviews) {
+                pageviewsTableBody.innerHTML += row;
+            } else {
+                otherConnectionsTableBody.innerHTML += row;
             }
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
         }
 
         fetchAndDisplayCounts();
