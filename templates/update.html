@@ -1,16 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Update Server</title>
+<title>Update Server</title>
 </head>
 <body>
-    <h1>Update Server</h1>
-    <form action="{{ url_for('update_server') }}" method="post">
-        <label for="secret_word">Secret Word:</label>
-        <input type="password" id="secret_word" name="secret_word" required>
-        <input type="submit" value="Run Updater">
-    </form>
-    <h2>Server Logs:</h2>
-    <pre>{{ log_content }}</pre>
+<h1>Update Server</h1>
+<form action="{{ url_for('update_server') }}" method="post" onsubmit="savePassword(event)">
+    <label for="secret_word">Secret Word:</label>
+    <input type="password" id="secret_word" name="secret_word" required>
+    <input type="submit" value="Run Updater">
+</form>
+<h2>Server Logs:</h2>
+<pre>{{ log_content }}</pre>
+
+<script>
+function savePassword(event) {
+    event.preventDefault(); // Prevent form submission
+
+    // Get the entered password
+    var secretWordInput = document.getElementById("secret_word");
+    var secretWord = secretWordInput.value;
+
+    // Save the entered password to localStorage
+    localStorage.setItem("secretWord", secretWord);
+}
+
+// Load password from localStorage when the page loads
+window.addEventListener("load", function(){
+    var secretWordInput = document.getElementById("secret_word");
+    var savedSecretWord = localStorage.getItem("secretWord");
+
+    if (savedSecretWord) {
+        secretWordInput.value = savedSecretWord;
+    }
+});
+</script>
 </body>
-</html>
