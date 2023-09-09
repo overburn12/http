@@ -31,8 +31,6 @@
             <tr>
                 <th>IP Address</th>
                 <th>Chats</th>
-                <th>Pageviews</th>
-                <th>Misc</th>
             </tr>
         </thead>
         <tbody id="chatsTableBody">
@@ -40,75 +38,27 @@
         </tbody>
     </table>
 
-    <h1>Pageviews</h1>
-    <table id="pageviewsTable">
-        <thead>
-            <tr>
-                <th>IP Address</th>
-                <th>Chats</th>
-                <th>Pageviews</th>
-                <th>Misc</th>
-            </tr>
-        </thead>
-        <tbody id="pageviewsTableBody">
-            <!-- Data will be populated here using JavaScript -->
-        </tbody>
-    </table>
-
-    <h1>Other Connections</h1>
-    <table id="otherConnectionsTable">
-        <thead>
-            <tr>
-                <th>IP Address</th>
-                <th>Chats</th>
-                <th>Pageviews</th>
-                <th>Misc</th>
-            </tr>
-        </thead>
-        <tbody id="otherConnectionsTableBody">
-            <!-- Data will be populated here using JavaScript -->
-        </tbody>
-    </table>
-
     <script>
         async function fetchAndDisplayCounts() {
             const chatsTableBody = document.getElementById('chatsTableBody');
-            const pageviewsTableBody = document.getElementById('pageviewsTableBody');
-            const otherConnectionsTableBody = document.getElementById('otherConnectionsTableBody');
 
             try {
                 const response = await fetch('/count');
                 const data = await response.json();
 
-                // Sort the data by count in descending order
+                // Sort the data by chat count in descending order
                 const sortedData = Object.entries(data)
-                .sort(([, a], [, b]) => {
-                    if (b.chats !== undefined && a.chats !== undefined) {
-                        return b.chats - a.chats;
-                    }
-                    if (b.pageviews !== undefined && a.pageviews !== undefined) {
-                        return b.pageviews - a.pageviews;
-                    }
-                    return b.misc - a.misc;
-                });
+                .sort(([, a], [, b]) => b - a);
 
-                for (const [ip, counts] of sortedData) {
+                for (const [ip, chatsCount] of sortedData) {
                     const row = `
                         <tr>
                             <td>${ip}</td>
-                            <td>${counts.chats}</td>
-                            <td>${counts.pageviews}</td>
-                            <td>${counts.misc}</td>
+                            <td>${chatsCount}</td>
                         </tr>
                     `;
 
-                    if (counts.chats) {
-                        chatsTableBody.innerHTML += row;
-                    } else if (counts.pageviews) {
-                        pageviewsTableBody.innerHTML += row;
-                    } else {
-                        otherConnectionsTableBody.innerHTML += row;
-                    }
+                    chatsTableBody.innerHTML += row;
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
