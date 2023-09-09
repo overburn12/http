@@ -11,8 +11,10 @@ with open('update.log', 'a') as logfile:
         result = subprocess.run(
             command,
             shell=True,
-            stdout=logfile,
-            stderr=logfile,
+            capture_output=True,  # Capture the command output
             text=True
         )
+        # Write the command output to the log file
+        logfile.write(result.stdout)
+        logfile.write(result.stderr)
         logfile.write(f'Return Code: {result.returncode}\n\n')
