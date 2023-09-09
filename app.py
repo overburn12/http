@@ -124,14 +124,17 @@ def view_count_page():
 @app.route('/update', methods=['GET', 'POST'])
 def update_server():
     if request.method == 'POST':
-        subprocess.run('python3 updater.py', shell=True)
-        return 'server updated succesfully'
+        secret_password = os.getenv("SECRET_PASSWORD")
+        if request.form.get("secret_word") == secret_password:
+            subprocess.run('python3 updater.py', shell=True)
+            return 'Server updated successfully'
+        else:
+            return 'Invalid secret word. Update aborted.'
 
     with open('update.log', 'r') as logfile:
         log_content = logfile.read()
-    # Render the update page template if accessed via GET request
-    return render_template('update.html', log_content=log_content)
 
+    return render_template('update.html', log_content=log_content)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080) 
