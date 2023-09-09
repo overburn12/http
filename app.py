@@ -56,6 +56,14 @@ def chat():
     bot_message = process_message(user_message)
     return jsonify({'bot_message': bot_message})
 
+@app.route('/count', methods=['GET'])
+def count_connections():
+    return jsonify(ip_counts)
+
+@app.route('/view_count', methods=['GET'])
+def view_count_page():
+    return render_template('count.html')
+
 @app.route('/update', methods=['GET', 'POST'])
 def update_server():
     if request.method == 'POST':
