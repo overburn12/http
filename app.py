@@ -124,8 +124,7 @@ def view_count_page():
 @app.route('/update', methods=['GET', 'POST'])
 def update_server():
     if request.method == 'POST':
-        # Execute the update process here (git pull, restart server, etc.)
-        execute_update_process()
+        subprocess.run('python3 updater.py', shell=True)
         return 'server updated succesfully'
 
     with open('update.log', 'r') as logfile:
@@ -133,19 +132,6 @@ def update_server():
     # Render the update page template if accessed via GET request
     return render_template('update.html', log_content=log_content)
 
-def execute_update_process():
-    commands = [
-        'git pull',
-        'sudo systemctl restart flask.service'
-    ]
-
-    with open('update.log', 'a') as logfile:
-        for command in commands:
-            result = subprocess.run(command, shell=True, capture_output=True, text=True)
-            logfile.write(f'Command: {command}\n')
-            logfile.write(f'Stdout: {result.stdout}\n')
-            logfile.write(f'Stderr: {result.stderr}\n')
-            logfile.write('\n')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080) 
