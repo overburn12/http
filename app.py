@@ -121,12 +121,6 @@ def count_connections():
 def view_count_page():
     return render_template('count.html')
 
-@app.route('/logs', methods=['GET'])
-def display_update_log():
-    with open('update.log', 'r') as logfile:
-        log_content = logfile.read()
-    return render_template('logs.html', log_content=log_content)
-
 @app.route('/update', methods=['GET', 'POST'])
 def update_server():
     if request.method == 'POST':
@@ -134,8 +128,10 @@ def update_server():
         execute_update_process()
         return 'server updated succesfully'
 
+    with open('update.log', 'r') as logfile:
+        log_content = logfile.read()
     # Render the update page template if accessed via GET request
-    return render_template('update.html')
+    return render_template('update.html', log_content=log_content)
 
 def execute_update_process():
     commands = [

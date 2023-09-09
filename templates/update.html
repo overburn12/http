@@ -8,5 +8,7 @@
     <form action="{{ url_for('update_server') }}" method="post">
         <input type="submit" value="Update Server">
     </form>
+    <h2>server logs:</h2>
+    <pre>{{ log_content }}</pre>
 </body>
 </html>
