@@ -1,6 +1,6 @@
 import subprocess, openai, json, os, logging
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, redirect, url_for
 from openai.error import OpenAIError
 
 app = Flask(__name__)
@@ -124,10 +124,32 @@ def view_count_page():
 @app.route('/update', methods=['GET', 'POST'])
 def update_server():
     if request.method == 'POST':
-        subprocess.run('git pull', shell=True)
-        subprocess.run('sudo systemctl restart flask.service', shell=True)
-        return 'Server updated successfully'
+        # Execute the update process here (git pull, restart server, etc.)
+        execute_update_process()
+        return redirect(url_for('logs'))
+
+    # Render the update page template if accessed via GET request
     return render_template('update.html')
+
+@app.route('/logs')
+def logs():
+    with open('update.log', 'r') as logfile:
+        output = logfile.read()
+    return render_template('logs.html', output=output)
+
+def execute_update_process():
+    commands = [
+        'git pull',
+        'sudo systemctl restart flask.service'
+    ]
+
+    with open('update.log', 'a') as logfile:
+        for command in commands:
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            logfile.write(f'Command: {command}\n')
+            logfile.write(f'Stdout: {result.stdout}\n')
+            logfile.write(f'Stderr: {result.stderr}\n')
+            logfile.write('\n')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080) 
