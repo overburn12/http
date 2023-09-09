@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Update</title>
+    <title>Update Server</title>
 </head>
 <body>
     <h1>Update Server</h1>
     {% if output %}
-        <h2>Output:</h2>
+        <h2>Update Output:</h2>
         <pre>
-        {% for line in output %}
-            {{ line }}
-        {% endfor %}
+            {{ output }}
         </pre>
     {% endif %}
-    <form action="/update" method="post">
+
+    <form action="{{ url_for('update_server') }}" method="post">
         <input type="submit" value="Update Server">
     </form>
 </body>
