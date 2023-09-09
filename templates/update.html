@@ -23,6 +23,9 @@ function savePassword(event) {
 
     // Save the entered password to localStorage
     localStorage.setItem("secretWord", secretWord);
+
+    // Submit the form
+    event.target.submit();
 }
 
 // Load password from localStorage when the page loads
@@ -36,3 +39,4 @@ window.addEventListener("load", function(){
 });
 </script>
 </body>
+</html>
