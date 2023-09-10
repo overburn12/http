@@ -1,4 +1,3 @@
-
 var chatHistories = [];
 var currentChatIndex = null;
 
@@ -250,6 +249,36 @@ function formatFileContentForChat(filename, content) {
   `;
 }
 
+async function generateTitle(chat_history) {
+  var temp_copy = JSON.parse(JSON.stringify(chat_history));
+  var userMessage = { role: 'user', content: 'summarize the previous text in 1 to 3 words. It will be used for the title of this chat.' };
+  temp_copy.messages.push(userMessage);
+
+  try {
+    // Send an additional request to get a summary for the chat title
+    const summaryResponse = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_message: temp_copy.messages })
+    });
+
+    const summaryData = await summaryResponse.json();
+
+    if (summaryData.bot_message.error) {
+      throw new Error(summaryData.bot_message.error);
+    }
+
+    const botMessage = { role: 'assistant', content: summaryData.bot_message.content };
+    
+    return botMessage.content; // Return the content directly
+
+  } catch (error) {
+    // ... (existing error handling code)
+  }
+  return "Error Chat";
+}
+
+
 async function sendMessage() {
   var userMessageElement = document.getElementById('user_message');
   var userMessageContent = userMessageElement.value;
@@ -261,6 +290,10 @@ async function sendMessage() {
   // Add loading and locked classes
   document.body.classList.add('loading');
   userMessageElement.classList.add('locked');
+
+  if (chatHistories[currentChatIndex].messages.length === 1) {
+    chatHistories[currentChatIndex].title = await generateTitle(chatHistories[currentChatIndex]);
+  }
 
   try {
     const response = await fetch('/chat', {
@@ -293,4 +326,6 @@ async function sendMessage() {
     document.body.classList.remove('loading');
     userMessageElement.classList.remove('locked');
   }
+
+  populateChatList();
 }
