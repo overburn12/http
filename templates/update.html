@@ -4,6 +4,7 @@
 <title>Update Server</title>
 </head>
 <body>
+<a href="{{ url_for('index') }}">index.html</a><br>
 <h1>Update Server</h1>
 <form action="{{ url_for('update_server') }}" method="post" onsubmit="savePassword(event)">
     <label for="secret_word">Secret Word:</label>
