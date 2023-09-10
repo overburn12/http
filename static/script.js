@@ -59,8 +59,8 @@ function renameCurrentChat() {
 }
 
 function addNewChat() {
-  currentChatIndex = chatHistories.length;
-  chatHistories.push({ title: "New Chat", messages: [] });
+  chatHistories.unshift({ title: "New Chat", messages: [] });
+  currentChatIndex = 0;
 
   localStorage.setItem('oldChats', JSON.stringify(chatHistories));
   
