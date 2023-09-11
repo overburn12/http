@@ -25,6 +25,10 @@ function toggleFileContent(headerElement) {
   }
 }
 
+function saveChatList(){
+  localStorage.setItem('oldChats', JSON.stringify(chatHistories)); 
+}
+
 function renderChatHistory() {
   var chatHistoryContainer = document.getElementById('chat_history');
   let htmlString = '';
@@ -53,7 +57,7 @@ function renameCurrentChat() {
   }
 
   chatHistories[currentChatIndex].title = newName;
-  localStorage.setItem('oldChats', JSON.stringify(chatHistories)); // Update local storage
+  saveChatList();
   populateChatList();  // Refresh the list of old chats
 }
 
@@ -61,7 +65,7 @@ function addNewChat() {
   chatHistories.unshift({ title: "New Chat", messages: [] });
   currentChatIndex = 0;
 
-  localStorage.setItem('oldChats', JSON.stringify(chatHistories));
+  saveChatList();
   
   clearFileInput();
   populateChatList();
@@ -149,7 +153,7 @@ function deleteCurrentChat() {
   chatHistories.splice(currentChatIndex, 1);
   loadChat(currentChatIndex > 0 ? currentChatIndex - 1 : currentChatIndex);
 
-  localStorage.setItem('oldChats', JSON.stringify(chatHistories));
+  saveChatList();
   clearFileInput();
   populateChatList();
 }
@@ -251,7 +255,7 @@ function formatFileContentForChat(filename, content) {
 
 async function generateTitle(chat_history) {
   var temp_copy = JSON.parse(JSON.stringify(chat_history));
-  var userMessage = { role: 'user', content: 'summarize the previous text in 1 to 3 words. It will be used for the title of this chat.' };
+  var userMessage = { role: 'user', content: 'generate a 1-3 word phrase for the title of this chat' };
   temp_copy.messages.push(userMessage);
 
   try {
@@ -269,15 +273,13 @@ async function generateTitle(chat_history) {
     }
 
     const botMessage = { role: 'assistant', content: summaryData.bot_message.content };
-    
     return botMessage.content; // Return the content directly
 
   } catch (error) {
     // ... (existing error handling code)
   }
-  return "Error Chat";
+  return "Error";
 }
-
 
 async function sendMessage() {
   var userMessageElement = document.getElementById('user_message');
@@ -291,9 +293,7 @@ async function sendMessage() {
   document.body.classList.add('loading');
   userMessageElement.classList.add('locked');
 
-  if (chatHistories[currentChatIndex].messages.length === 1) {
-    chatHistories[currentChatIndex].title = await generateTitle(chatHistories[currentChatIndex]);
-  }
+  var isNewChat = chatHistories[currentChatIndex].messages.length === 1; 
 
   try {
     const response = await fetch('/chat', {
@@ -310,7 +310,7 @@ async function sendMessage() {
 
     const botMessage = { role: 'assistant', content: data.bot_message.content };
     chatHistories[currentChatIndex].messages.push(botMessage);
-    localStorage.setItem('oldChats', JSON.stringify(chatHistories));
+    saveChatList();
     renderChatHistory();
     
     // Clear the text field if successful
@@ -326,6 +326,12 @@ async function sendMessage() {
     document.body.classList.remove('loading');
     userMessageElement.classList.remove('locked');
   }
-
-  populateChatList();
+  
+  if (isNewChat) {
+    var newTitle = await generateTitle(chatHistories[currentChatIndex]);
+    chatHistories[currentChatIndex].title = newTitle.replace(/"/g, "");
+    saveChatList();
+    populateChatList();
+  }
+  
 }
