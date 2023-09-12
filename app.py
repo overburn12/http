@@ -1,3 +1,4 @@
+from datetime import datetime
 import subprocess, openai, json, os
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, send_from_directory
@@ -5,6 +6,7 @@ from openai.error import OpenAIError
 
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+app_start_time = int(datetime.utcnow().timestamp())
 
 load_dotenv() 
 openai.api_key = os.getenv("MY_API_KEY")
@@ -74,7 +76,7 @@ def update_server():
     with open('update.log', 'r') as logfile:
         log_content = logfile.read()
 
-    return render_template('update.html', log_content=log_content)
+    return render_template('update.html', log_content=log_content, app_start_time=app_start_time)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

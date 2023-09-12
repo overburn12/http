@@ -45,6 +45,11 @@
         height: 6em;  
     }
 }
+
+body {
+    font-size: 18px; 
+}
+
 .file-content {
     border: 1px solid #ddd;
     margin: 5px 0;
@@ -91,11 +96,13 @@ body.loading {
 }
 pre code {
     display: block;
-    background-color: #f0f0f0;
+    background-color: #292929;
     border: 1px solid #ccc;
     padding: 10px;
     font-family: monospace;
-    overflow-x: auto;  /* Add this line */
+    font-size: 14px; 
+    overflow-x: auto;
+    color: #ffffff;  /* Add this line */
 }
 .old-chat-title {
     cursor: pointer;
@@ -103,5 +110,5 @@ pre code {
     text-decoration: underline;
 }
 .highlighted-chat {
-    background-color: #bbb23a;
+    background-color: #dfdede;
 }
