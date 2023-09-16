@@ -36,6 +36,9 @@
     #user_message {
         height: 6em;  
     }
+    #old_chats_list {
+        width: 100px;  /* Width for mobile browsers */
+    }
 }
 
 body {
