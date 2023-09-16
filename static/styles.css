@@ -7,20 +7,19 @@
     display: inline; /* Display button inline with textarea */
 }
 #chat_input_container {
-    max-width: calc(100% - 190px);  /* 100px for the chat list, 80px for the Send button, and 10px extra padding */
-    margin-right: 110px;  /* Aligns with the edge of the #old_chats_list */
+    max-width: calc(100% - 290px);  /* 100px for the chat list, 80px for the Send button, and 10px extra padding */
+    margin-right: 210px;  /* Aligns with the edge of the #old_chats_list */
     display: flex;  /* Use flex layout to align textarea and button */
 }
 #chat_history {
-    max-width: calc(100% - 110px);  /* 100px for the chat list, 10px for extra padding */
+    max-width: calc(100% - 210px);  /* 100px for the chat list, 10px for extra padding */
     overflow-wrap: break-word;  /* Breaks the word and wraps onto the next line */
 }
 #old_chats_list {
     position: absolute;
     top: 0;
     right: 0;
-    width: 100px;
-    max-height: 100vh; /* Adjust based on your layout */
+    width: 200px;
     overflow-y: auto;  /* Enable vertical scrolling */
     border-left: 1px solid #ccc;
     padding: 10px;
@@ -28,14 +27,7 @@
 #reset_button {
     margin-top: 20px;  /* Adjust the space as needed */
 }
-#old_chats_list {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100px;
-    border-left: 1px solid #ccc;
-    padding: 10px;
-}
+
 #user_message.locked {
     background-color: #ccc;
     pointer-events: none;

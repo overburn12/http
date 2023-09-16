@@ -13,10 +13,10 @@
   <button id="uploadButton" onclick="handleFiles()">Attach Files</button>
   <input type="file" id="codeFiles" multiple accept=".txt, .js, .py, .java, .c, .cpp, .h, .html, .css, .xml, .json, .csv, .md, .sh, .bat, .cmd, .sql, .ini, .cfg, .conf, .log">
   <div id="chat_input_container">
-      <textarea id="user_message"></textarea>
-      <button id="send_button" onclick="sendMessage()">Send</button>
+    <textarea id="user_message"></textarea>
+    <button id="send_button" onclick="sendMessage()">Send</button>
   </div>
-  <a href="/view_count">Connection Counts</a> <img src ='favicon.ico'> <a href="/update">Update Server</a>
+  <a href="/view_count">Connection Counts</a> <img src="favicon.ico"> <a href="/update">Update Server</a>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

@@ -97,7 +97,7 @@ function populateChatList() {
     var chatContainer = document.createElement('div');
     var chatTitle = document.createElement('div');
     chatTitle.classList.add('old-chat-title');
-    chatTitle.textContent = chat.title;
+    chatTitle.textContent = '\u2022 ' + chat.title; // Add the bullet point before the chat title
     chatTitle.onclick = function () {
       loadChat(index);
     };
@@ -136,11 +136,15 @@ function populateChatList() {
 }
 
 function clearLocalStorage() {
-  localStorage.removeItem('oldChats');
-  chatHistories = [];
-  currentChatIndex = 0;
-  populateChatList();
-  renderChatHistory();
+  var confirmation = confirm("This will delete all chats. Are you sure you want to proceed?");  // Prompt the user with a confirmation message
+
+  if (confirmation) {
+    localStorage.removeItem('oldChats');
+    chatHistories = [];
+    currentChatIndex = 0;
+    populateChatList();
+    renderChatHistory();
+  }
 }
 
 function deleteCurrentChat() {
