@@ -39,6 +39,10 @@
     #old_chats_list {
         width: 100px;  /* Width for mobile browsers */
     }
+    #chat_history {
+        max-width: calc(100% - 110px);  /* 100px for the chat list, 10px for extra padding */
+        overflow-wrap: break-word;  /* Breaks the word and wraps onto the next line */
+    }
 }
 
 body {
