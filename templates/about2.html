@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Overburn's Chatbot</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>About Overburn's Chatbot</h1>
+        <a href="/">Back to Chat</a>
+    </header>
+
+    <section>
+        <h2>Overview</h2>
+        <p>
+            Overburn's Chatbot is a sophisticated web-based conversational agent built using OpenAI's GPT-3.5 Turbo model. It allows users to chat in real-time with the AI, providing them with information, answering queries, and aiding in various tasks.
+        </p>
+    </section>
+
+    <section>
+        <h2>Features</h2>
+        <ul>
+            <li><strong>Real-time Interaction:</strong> Communicate with the AI and get immediate responses.</li>
+            <li><strong>File Handling:</strong> Attach various file formats, and the bot will display its contents.</li>
+            <li><strong>Connection Tracking:</strong> Monitor the number of connections to the server.</li>
+            <li><strong>Server Management:</strong> Update the server directly from the web interface.</li>
+            <li><strong>Chat Management:</strong> Save, load, rename, and delete chat histories.</li>
+            <li><strong>Code Interpretation:</strong> Send code snippets to the AI and get relevant information or interpretation.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>How it Works</h2>
+        <p>
+            The chatbot uses Flask, a micro web framework written in Python, to serve the web pages and handle server-side logic. It communicates with the OpenAI API to process and generate responses based on the user's input.
+        </p>
+    </section>
+
+    <section>
+        <h2>Security and Data</h2>
+        <p>
+            User privacy is paramount. The chatbot keeps track of IP addresses only for connection counts. No chat content is saved beyond the current session, ensuring user data remains confidential.
+        </p>
+    </section>
+
+    <section>
+        <h2>About Overburn</h2>
+        <p>
+            Overburn is an enthusiastic individual with a keen interest in STEM topics. This chatbot is a testament to his dedication to learning and applying coding concepts. Apart from tech, Overburn enjoys cycling, camping, hiking, and more.
+        </p>
+    </section>
+
+    <footer>
+        <p>© 2023 Overburn's Webserver. All rights reserved.</p>
+    </footer>
+</body>
+</html>

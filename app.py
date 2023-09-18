@@ -59,6 +59,10 @@ def chat():
 def count_connections():
     return jsonify(ip_counts)
 
+@app.route('/about', methods=['GET'])
+def about_page():
+    return render_template('about.html')
+
 @app.route('/view_count', methods=['GET'])
 def view_count_page():
     return render_template('count.html')
