@@ -91,7 +91,7 @@ function populateChatList() {
   }
 
   var oldChatsContainer = document.getElementById('chats_list');
-  oldChatsContainer.innerHTML = '<h3>Chat List</h3>';
+  oldChatsContainer.innerHTML = '<h3>OpenAI Chat</h3>';
 
   chatHistories.forEach(function (chat, index) {
     var chatContainer = document.createElement('div');
@@ -179,7 +179,14 @@ function render_codeblocks(input_message) {
       var escapedCode = escapeHtml(part);
       return '<pre><code>' + escapedCode + '</code></pre>';
     } else {
-      return part.replace(/\n/g, '<br>');
+      if (part.trim().startsWith('<div class="file-content">')) {
+        // Return the original content without escaping
+        return part;
+      } else {
+        // Escape the other content
+        var escapedCode = escapeHtml(part);
+        return escapedCode.replace(/\n/g, '<br>');
+      }
     }
   }).join('');
 
@@ -188,14 +195,14 @@ function render_codeblocks(input_message) {
 
 
 function renderSingleMessage(message) {
-  var roleName = message.role === 'user' ? 'User' : 'Bot';
+  var roleName = message.role === 'user' ? 'overburn.png' : 'gpt.png';
   var className = message.role === 'user' ? 'user-name' : 'bot-name';
   var messageLineClass = message.role === 'user' ? 'user-message-line' : 'bot-message-line';
   var renderedContent = render_codeblocks(message.content);
 
   return `
     <div class="${messageLineClass}">
-      <span class="${className}">${roleName}:</span>
+      <span class="${className}"><img src='${roleName}'></span>
       <div class="message-content">${renderedContent}</div>
     </div>
   `;

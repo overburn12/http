@@ -39,6 +39,14 @@ ip_counts = load_ip_counts()
 def index():
     return render_template('index.html')
 
+@app.route('/overburn.png')
+def user_icon():
+    return send_from_directory(app.root_path, 'Overburn.png')
+
+@app.route('/gpt.png')
+def gpt_icon():
+    return send_from_directory(app.root_path, 'GPT.png')
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(app.root_path, 'favicon.ico', mimetype='image/vnd.microsoft.icon')

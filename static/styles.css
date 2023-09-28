@@ -1,58 +1,62 @@
-:root{
-    --chat-list-width: 250px;   
-}
-#user_message {
+:root {
+    --chat-list-width: 250px;
+  }
+  
+  #user_message {
     width: 100%;
     height: 10em;
-}
-#send_button {
+  }
+  
+  #send_button {
     width: 80px;
     display: inline;
-}
-#chat_input_container {
-    max-width: calc(100% - var(--chat-list-width) - 80px - 10px);
-    margin-right: calc(var(--chat-list-width) + 10px);
+  }
+  
+  #chat_input_container {
+    max-width: 700px;
+    margin-left: 10px;
     display: flex;
-}
-#chat_history {
-    max-width: calc(100% - var(--chat-list-width) - 10px);
-}
-#chats_list {
-    position: absolute;
+  }
+  
+  #chat_history {
+    max-width: 700px;
+    /*flex: 1;
+    margin-left: var(--chat-list-width);*/
+  }
+
+  #the_page{
+    margin-left: calc(var(--chat-list-width) + 20px);
+    justify-content: center;
+    align-items: center;
+  }
+  
+  #chats_list {
+    position: fixed;
     top: 0;
-    right: 0;
+    left: 0;
+    bottom: 0;
     width: var(--chat-list-width);
     overflow-y: auto;
-    border-left: 1px solid #ccc;
+    /*border-right: 1px solid #ccc;*/
     padding: 10px;
-}
-#reset_button {
+    background-color: #202123;
+    /*z-index: 1;*/
+  }
+  
+  #reset_button {
     margin-top: 20px;
-}
-
-#user_message.locked {
+  }
+  
+  #user_message.locked {
     background-color: #ccc;
     pointer-events: none;
-}
-@media only screen and (max-width: 768px) {
-    #user_message {
-        height: 6em;  
-    }
-    #chats_list {
-        width: 100px;
-    }
-    #chat_history {
-        max-width: calc(100% - 110px);
-    }
-    #chat_input_container {
-        max-width: calc(100% - 100px - 80px - 10px);
-        margin-right: 110px;
-        display: flex;
-    }
-}
-
-body {
+  }
+  
+  
+  body {
+    /*display: flex;*/
     font-size: 18px;
+    line-height: 1.5; /* Increase the line spacing */
     background-color: #444654;
     color: #ffffff;
 }
@@ -60,11 +64,11 @@ body {
 .file-content {
     border: 1px solid #ddd;
     margin: 5px 0;
-    background-color: #f5f5f5;
+    background-color: #2f2d2d;
 }
 
 .file-header {
-    background-color: #ddd;
+    background-color: #310606;
     padding: 5px;
     cursor: pointer;
     font-weight: bold;
@@ -80,16 +84,16 @@ body.loading {
     cursor: progress;
 }
 
-/* General styles for both user and bot messages */
-.user-message-line, .bot-message-line {
+.user-message-line,
+.bot-message-line {
     display: flex;
     align-items: flex-start;
     margin-bottom: 10px;
     padding: 4px;
 }
 
-/* Styles for the username */
-.user-name, .bot-name {
+.user-name, 
+.bot-name {
     font-weight: bold;
     margin-right: 10px;
     color: red;
@@ -99,9 +103,8 @@ body.loading {
     color: blue;
 }
 
-/* Styles for the message content */
 .message-content {
-    text-indent: 20px;
+    /*text-indent: 20px;*/
     flex: 1;
     overflow-wrap: break-word;
 }
@@ -114,7 +117,8 @@ body.loading {
     background-color: #444654;
 }
 
-.user-message-line p, .bot-message-line p {
+.user-message-line p,
+.bot-message-line p {
     margin: 0;
     padding: 0;
 }
@@ -132,10 +136,10 @@ pre code {
 
 .old-chat-title {
     cursor: pointer;
-    color: blue;
+    color: #ffffff;
     text-decoration: underline;
 }
 
 .highlighted-chat {
-    background-color: #dfdede;
+    background-color: #343541;
 }
