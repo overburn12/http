@@ -90,7 +90,7 @@ function populateChatList() {
     chatHistories = [{ title: "New Chat", messages: [] }];
   }
 
-  var oldChatsContainer = document.getElementById('old_chats_list');
+  var oldChatsContainer = document.getElementById('chats_list');
   oldChatsContainer.innerHTML = '<h3>Chat List</h3>';
 
   chatHistories.forEach(function (chat, index) {
@@ -190,12 +190,17 @@ function render_codeblocks(input_message) {
 function renderSingleMessage(message) {
   var roleName = message.role === 'user' ? 'User' : 'Bot';
   var className = message.role === 'user' ? 'user-name' : 'bot-name';
-  var messageLineClass = message.role === 'user' ? 'user-message-line' : 'bot-message-line';  // New line
+  var messageLineClass = message.role === 'user' ? 'user-message-line' : 'bot-message-line';
   var renderedContent = render_codeblocks(message.content);
-  
-  // Include messageLineClass in the surrounding <div> element
-  return `<div class="${messageLineClass}"><p><span class="${className}">${roleName}:</span> ${renderedContent}</p></div>`;  // Updated line
+
+  return `
+    <div class="${messageLineClass}">
+      <span class="${className}">${roleName}:</span>
+      <div class="message-content">${renderedContent}</div>
+    </div>
+  `;
 }
+
 
 function clearFileInput() {
   document.getElementById('codeFiles').value = '';

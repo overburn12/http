@@ -1,31 +1,33 @@
+:root{
+    --chat-list-width: 250px;   
+}
 #user_message {
-    width: 100%; /* You can adjust this value */
-    height: 10em; /* Height for 4 lines */
+    width: 100%;
+    height: 10em;
 }
 #send_button {
-    width: 80px;  /* Fixed width for the Send button */
-    display: inline; /* Display button inline with textarea */
+    width: 80px;
+    display: inline;
 }
 #chat_input_container {
-    max-width: calc(100% - 290px);  /* 100px for the chat list, 80px for the Send button, and 10px extra padding */
-    margin-right: 210px;  /* Aligns with the edge of the #old_chats_list */
-    display: flex;  /* Use flex layout to align textarea and button */
+    max-width: calc(100% - var(--chat-list-width) - 80px - 10px);
+    margin-right: calc(var(--chat-list-width) + 10px);
+    display: flex;
 }
 #chat_history {
-    max-width: calc(100% - 210px);  /* 100px for the chat list, 10px for extra padding */
-    overflow-wrap: break-word;  /* Breaks the word and wraps onto the next line */
+    max-width: calc(100% - var(--chat-list-width) - 10px);
 }
-#old_chats_list {
+#chats_list {
     position: absolute;
     top: 0;
     right: 0;
-    width: 200px;
-    overflow-y: auto;  /* Enable vertical scrolling */
+    width: var(--chat-list-width);
+    overflow-y: auto;
     border-left: 1px solid #ccc;
     padding: 10px;
 }
 #reset_button {
-    margin-top: 20px;  /* Adjust the space as needed */
+    margin-top: 20px;
 }
 
 #user_message.locked {
@@ -36,21 +38,23 @@
     #user_message {
         height: 6em;  
     }
-    #old_chats_list {
-        width: 100px;  /* Width for mobile browsers */
+    #chats_list {
+        width: 100px;
     }
     #chat_history {
-        max-width: calc(100% - 110px);  /* 100px for the chat list, 10px for extra padding */
+        max-width: calc(100% - 110px);
     }
     #chat_input_container {
-        max-width: calc(100% - 190px);  /* 100px for the chat list, 80px for the Send button, and 10px extra padding */
-        margin-right: 110px;  /* Aligns with the edge of the #old_chats_list */
-        display: flex;  /* Use flex layout to align textarea and button */
+        max-width: calc(100% - 100px - 80px - 10px);
+        margin-right: 110px;
+        display: flex;
     }
 }
 
 body {
-    font-size: 18px; 
+    font-size: 18px;
+    background-color: #444654;
+    color: #ffffff;
 }
 
 .file-content {
@@ -68,50 +72,70 @@ body {
 
 .file-body {
     padding: 5px;
-    white-space: pre-wrap; /* Preserve whitespace and new lines */
+    white-space: pre-wrap;
     font-family: monospace;
 }
 
 body.loading {
     cursor: progress;
 }
-.user-name {
+
+/* General styles for both user and bot messages */
+.user-message-line, .bot-message-line {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    padding: 4px;
+}
+
+/* Styles for the username */
+.user-name, .bot-name {
+    font-weight: bold;
+    margin-right: 10px;
     color: red;
 }
+
 .bot-name {
     color: blue;
 }
+
+/* Styles for the message content */
+.message-content {
+    text-indent: 20px;
+    flex: 1;
+    overflow-wrap: break-word;
+}
+
 .user-message-line {
-    background-color: #dfdede; /* Gray background */
+    background-color: #343541;
 }
 
 .bot-message-line {
-    background-color: #ffffff; /* White background */
-}
-.user-message-line, .bot-message-line {
-    margin: 0;
-    padding: 0;
+    background-color: #444654;
 }
 
 .user-message-line p, .bot-message-line p {
     margin: 0;
-    padding: 4px;  /* You can adjust this padding as needed */
+    padding: 0;
 }
+
 pre code {
     display: block;
-    background-color: #292929;
+    background-color: #030303;
     border: 1px solid #ccc;
     padding: 10px;
     font-family: monospace;
-    font-size: 14px; 
+    font-size: 14px;
     overflow-x: auto;
-    color: #ffffff;  /* Add this line */
+    color: #ffffff;
 }
+
 .old-chat-title {
     cursor: pointer;
     color: blue;
     text-decoration: underline;
 }
+
 .highlighted-chat {
     background-color: #dfdede;
 }
