@@ -31,7 +31,7 @@ function saveChatList(){
 
 function renderChatHistory() {
   var chat_title = document.getElementById('chat_title');
-  chat_title.innerHTML = '<center><h2>' + chatHistories[currentChatIndex].title + '</h2></center>';
+  chat_title.innerHTML = '<center><h3>' + chatHistories[currentChatIndex].title + '</h3></center>';
 
   var chatHistoryContainer = document.getElementById('chat_history');
   let htmlString = '';
@@ -93,7 +93,7 @@ function populateChatList() {
   }
 
   var oldChatsContainer = document.getElementById('chats_list');
-  oldChatsContainer.innerHTML = '<h3>OpenAI Chat</h3>';
+  oldChatsContainer.innerHTML = '<center><h2>OpenAI Chat</h2></center>';
 
   chatHistories.forEach(function (chat, index) {
     var chatContainer = document.createElement('div');
