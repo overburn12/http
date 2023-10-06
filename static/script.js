@@ -66,7 +66,6 @@ function addNewChat() {
   currentChatIndex = 0;
 
   saveChatList();
-  
   clearFileInput();
   populateChatList();
   renderChatHistory(currentChatIndex);
@@ -196,13 +195,13 @@ function render_codeblocks(input_message) {
 
 function renderSingleMessage(message) {
   var roleName = message.role === 'user' ? 'overburn.png' : 'gpt.png';
-  var className = message.role === 'user' ? 'user-name' : 'bot-name';
+  var className = message.role === 'user' ? 'chat-icon' : 'chat-icon';
   var messageLineClass = message.role === 'user' ? 'user-message-line' : 'bot-message-line';
   var renderedContent = render_codeblocks(message.content);
 
   return `
     <div class="${messageLineClass}">
-      <span class="${className}"><img src='${roleName}'></span>
+      <div class="${className}"><img src='${roleName}'></div>
       <div class="message-content">${renderedContent}</div>
     </div>
   `;

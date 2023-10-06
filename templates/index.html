@@ -8,13 +8,15 @@
 </head>
 <body>
   <div id="chats_list"></div>
-  <div id="center_page">
-    <div id="the_page">
-      <div id="chat_history"></div>
-      <div id="chat_input_container">
+  <div id="the_page">
+    <div id="chat_title"><center><h2>The Chat Title HERE</h2></center></div>
+    <div id="chat_history"></div>
+    <div id="chat_bottom">
+      <center>
+        <div id="chat_input_container">
         <div id="file_upload">
-          <button id="uploadButton" onclick="handleFiles()">Attach Files</button>
-          <input type="file" id="codeFiles" multiple accept=".txt, .js, .py, .java, .c, .cpp, .h, .html, .css, .xml, .json, .csv, .md, .sh, .bat, .cmd, .sql, .ini, .cfg, .conf, .log">
+          <input type="file" id="codeFiles" multiple accept=".txt, .js, .py, .java, .c, .cpp, .h, .html, .css, .xml, .json, .csv, .md, .sh, .bat, .cmd, .sql, .ini, .cfg, .conf, .log" style="display:none;" onchange="handleFiles()">
+          <button id="uploadButton" onclick="document.getElementById('codeFiles').click()">Attach Files</button>
         </div>
         <div id="message_entry">
           <textarea id="user_message"></textarea>
@@ -22,7 +24,8 @@
         </div>    
       </div>
       <a href="/view_count">Connection Counts</a> <img src="favicon.ico"> <a href="/update">Update Server</a> <img src="favicon.ico"> <a href="/about">About</a>
-    </div>
+      </center>
+    </div> 
   </div>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
