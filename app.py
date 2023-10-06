@@ -1,7 +1,7 @@
 from datetime import datetime
 import subprocess, openai, json, os
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, Response
 from openai.error import OpenAIError
 
 app = Flask(__name__)
@@ -10,6 +10,8 @@ app_start_time = int(datetime.utcnow().timestamp())
 
 load_dotenv() 
 openai.api_key = os.getenv("MY_API_KEY")
+
+images = {}
 
 def process_message(chat_history):
     try:
@@ -35,21 +37,35 @@ def load_ip_counts():
 
 ip_counts = load_ip_counts()
 
+def load_images_to_memory():
+    """Load images and store them in the images dictionary."""
+    with app.open_resource('Overburn.png', 'rb') as f:
+        images['overburn.png'] = f.read()
+
+    with app.open_resource('GPT.png', 'rb') as f:
+        images['gpt.png'] = f.read()
+
+    with app.open_resource('favicon.ico', 'rb') as f:
+        images['favicon.ico'] = f.read()
+
+load_images_to_memory()
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/overburn.png')
 def user_icon():
-    return send_from_directory(app.root_path, 'Overburn.png')
+    return Response(images['overburn.png'], content_type='image/png')
 
 @app.route('/gpt.png')
 def gpt_icon():
-    return send_from_directory(app.root_path, 'GPT.png')
+    return Response(images['gpt.png'], content_type='image/png')
 
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(app.root_path, 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+    return Response(images['favicon.ico'], content_type='image/vnd.microsoft.icon')
+
 
 @app.route('/chat', methods=['POST'])
 def chat():

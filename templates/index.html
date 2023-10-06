@@ -3,20 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Overburn's Webserver</title>
+  <title>Overburn.org - OpenAI Chat</title>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
   <div id="chats_list"></div>
-  <div id="the_page">
-    <div id="chat_history"></div>
-    <button id="uploadButton" onclick="handleFiles()">Attach Files</button>
-    <input type="file" id="codeFiles" multiple accept=".txt, .js, .py, .java, .c, .cpp, .h, .html, .css, .xml, .json, .csv, .md, .sh, .bat, .cmd, .sql, .ini, .cfg, .conf, .log">
-    <div id="chat_input_container">
-      <textarea id="user_message"></textarea>
-      <button id="send_button" onclick="sendMessage()">Send</button>
+  <div id="center_page">
+    <div id="the_page">
+      <div id="chat_history"></div>
+      <div id="chat_input_container">
+        <div id="file_upload">
+          <button id="uploadButton" onclick="handleFiles()">Attach Files</button>
+          <input type="file" id="codeFiles" multiple accept=".txt, .js, .py, .java, .c, .cpp, .h, .html, .css, .xml, .json, .csv, .md, .sh, .bat, .cmd, .sql, .ini, .cfg, .conf, .log">
+        </div>
+        <div id="message_entry">
+          <textarea id="user_message"></textarea>
+          <button id="send_button" onclick="sendMessage()">Send</button>
+        </div>    
+      </div>
+      <a href="/view_count">Connection Counts</a> <img src="favicon.ico"> <a href="/update">Update Server</a> <img src="favicon.ico"> <a href="/about">About</a>
     </div>
-    <a href="/view_count">Connection Counts</a> <img src="favicon.ico"> <a href="/update">Update Server</a> <img src="favicon.ico"> <a href="/about">About</a>
   </div>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

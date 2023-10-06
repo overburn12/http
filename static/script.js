@@ -58,7 +58,7 @@ function renameCurrentChat() {
 
   chatHistories[currentChatIndex].title = newName;
   saveChatList();
-  populateChatList();  // Refresh the list of old chats
+  populateChatList();  // Refresh the list of chats
 }
 
 function addNewChat() {
@@ -180,7 +180,7 @@ function render_codeblocks(input_message) {
       return '<pre><code>' + escapedCode + '</code></pre>';
     } else {
       if (part.trim().startsWith('<div class="file-content">')) {
-        // Return the original content without escaping
+        // Return the original content without escaping, file content has already been escaped when it was attached
         return part;
       } else {
         // Escape the other content
