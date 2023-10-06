@@ -1,6 +1,5 @@
 :root {
   --chat-list-width: 250px;
-  --chat-title-height: 75px;
   --chat-content-width: 700px;
 }
 
@@ -15,6 +14,7 @@
 }
 
 #chat_bottom{
+  padding: 20px;
   background-color: #343541;
   width: 100%;
   justify-content: center;
@@ -34,12 +34,16 @@
 }
 
 #chat_title{
-  height: var(--chat-title-height);
   background-color: #202123;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
 }
 
 #the_page{
-  margin-left: calc(var(--chat-list-width) + 20px);
+  margin-left: var(--chat-list-width);
   justify-content: center;
   align-items: center;
 }
@@ -77,24 +81,13 @@ body {
 body.loading {
   cursor: progress;
 }
-
-.file-content {
-    border: 1px solid #ddd;
-    margin: 5px 0;
-    background-color: #2f2d2d;
+a {
+  color: #ffffff; /* Desired link color */
+  text-decoration: none; /* Remove underline */
 }
 
-.file-header {
-    background-color: #310606;
-    padding: 5px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.file-body {
-    padding: 5px;
-    white-space: pre-wrap;
-    font-family: monospace;
+a:visited {
+  color: #ffffff; /* Desired link color for visited links */
 }
 
 .user-message-line,
@@ -103,6 +96,7 @@ body.loading {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 20px;
 }
 .user-message-line {
     background-color: #343541;
@@ -118,6 +112,7 @@ body.loading {
     justify-content: center;
     align-items: center;
     vertical-align: top;
+    padding: 20px;
 }
 
 .message-content {
@@ -125,15 +120,50 @@ body.loading {
     width: var(--chat-content-width);
 }
 
+.file-content {
+  display: block;
+  background-color: #030303;
+  border: 0px;
+  border-radius: 10px;
+  padding: 0px;
+  color: #ffffff;
+  overflow-x: auto;
+}
+
+.file-header {
+  padding: 5px;
+  background-color: #413434;
+  cursor: pointer;
+}
+
+.file-body {
+  padding: 5px;
+  font-size: 14px;
+  white-space: pre;
+  font-family: monospace;
+  overflow-x: auto;
+}
+
 pre code {
-    display: block;
-    background-color: #030303;
-    border: 1px solid #ccc;
-    padding: 10px;
-    font-family: monospace;
-    font-size: 14px;
-    overflow-x: auto;
-    color: #ffffff;
+  display: block;
+  background-color: #030303;
+  border: 0px;
+  border-radius: 10px;
+  padding: 0px;
+  font-family: monospace;
+  font-size: 14px;
+  overflow-x: auto;
+  color: #ffffff;
+}
+
+.code{
+  padding: 5px;
+}
+
+pre code div.codeblock-title {
+  background-color: #413434;
+  padding: 5px;
+  font-weight: bold;
 }
 
 .old-chat-title {

@@ -30,6 +30,9 @@ function saveChatList(){
 }
 
 function renderChatHistory() {
+  var chat_title = document.getElementById('chat_title');
+  chat_title.innerHTML = '<center><h2>' + chatHistories[currentChatIndex].title + '</h2></center>';
+
   var chatHistoryContainer = document.getElementById('chat_history');
   let htmlString = '';
 
@@ -131,6 +134,10 @@ function populateChatList() {
   oldChatsContainer.appendChild(deleteChatButton);
   oldChatsContainer.appendChild(clearStorageButton);
 
+  //oldChatsContainer.innerHTML += '<img src="favicon.ico"><a href="/view_count">Connection Counts</a><br>'; 
+  //oldChatsContainer.innerHTML += '<img src="favicon.ico"><a href="/update">Update Server</a><br>';
+  //oldChatsContainer.innerHTML += '<img src="favicon.ico"><a href="/about">About</a>';
+
   highlightSelectedChat();
 }
 
@@ -174,9 +181,16 @@ function render_codeblocks(input_message) {
 
   var output_message = parts.map(function (part, index) {
     if (index % 2 === 1) {
+      // Split the code into title and content
+      var codeParts = part.split('\n');
+      var title = codeParts[0].trim();
+      var content = codeParts.slice(1).join('\n').trim();
+
       // Escape the content inside the code blocks
-      var escapedCode = escapeHtml(part);
-      return '<pre><code>' + escapedCode + '</code></pre>';
+      var escapedCode = escapeHtml(content);
+
+      // Create the title and code blocks with appropriate styling
+      return '<pre><code><div class="codeblock-title">' + title + '</div><div class="code">' + escapedCode + '</div></code></pre>';
     } else {
       if (part.trim().startsWith('<div class="file-content">')) {
         // Return the original content without escaping, file content has already been escaped when it was attached
@@ -249,7 +263,8 @@ function escapeHtml(text) {
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
-      "'": '&#039;'
+      "'": '&#039;',
+      '`': '&#96;'
   };
   return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
