@@ -5,13 +5,25 @@ from flask import Flask, render_template, request, jsonify, send_from_directory,
 from openai.error import OpenAIError
 
 app = Flask(__name__)
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+#app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app_start_time = int(datetime.utcnow().timestamp())
 
 load_dotenv() 
 openai.api_key = os.getenv("MY_API_KEY")
 
 images = {}
+
+#-------------------------------------------------------------------
+# functions 
+#-------------------------------------------------------------------
+
+def generate_model_list():
+    response = ''
+    model_list = openai.Model.list()
+    sorted_models = sorted(model_list['data'], key=lambda x: x['id'])
+    for model in sorted_models:
+        response += model['id'] + '<br>'
+    return response
 
 def process_message(chat_history):
     try:
@@ -37,6 +49,10 @@ def load_ip_counts():
 
 ip_counts = load_ip_counts()
 
+#-------------------------------------------------------------------
+# image handling
+#-------------------------------------------------------------------
+
 def load_images_to_memory():
     """Load images and store them in the images dictionary."""
     with app.open_resource('Overburn.png', 'rb') as f:
@@ -50,10 +66,6 @@ def load_images_to_memory():
 
 load_images_to_memory()
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
 @app.route('/overburn.png')
 def user_icon():
     return Response(images['overburn.png'], content_type='image/png')
@@ -66,26 +78,35 @@ def gpt_icon():
 def favicon():
     return Response(images['favicon.ico'], content_type='image/vnd.microsoft.icon')
 
+#-------------------------------------------------------------------
+# page routes
+#-------------------------------------------------------------------
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-
     ip_counts[ip] = ip_counts.get(ip, 0) + 1
-
     save_ip_counts()  # Save counts to file after updating them
 
     user_message = request.json['user_message']
     bot_message = process_message(user_message)
     return jsonify({'bot_message': bot_message})
 
-@app.route('/count', methods=['GET'])
-def count_connections():
-    return jsonify(ip_counts)
-
 @app.route('/about', methods=['GET'])
 def about_page():
     return render_template('about.html')
+
+@app.route('/models', methods=['GET'])
+def return_models():
+    return generate_model_list()
+
+@app.route('/count', methods=['GET'])
+def count_connections():
+    return jsonify(ip_counts)
 
 @app.route('/view_count', methods=['GET'])
 def view_count_page():
@@ -105,6 +126,8 @@ def update_server():
         log_content = logfile.read()
 
     return render_template('update.html', log_content=log_content, app_start_time=app_start_time)
+
+#-------------------------------------------------------------------
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

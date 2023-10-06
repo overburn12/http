@@ -32,7 +32,6 @@
 }
 
 #chat_history {
-  display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
@@ -48,9 +47,11 @@
 }
 
 #the_page{
-  margin-left: var(--chat-list-width);
+  margin: 0px;
+  margin-left: calc(var(--chat-list-width) + 10px);
   justify-content: center;
   align-items: center;
+  padding: 0px;
 }
 
 #message_entry{
@@ -82,6 +83,7 @@ body {
   line-height: 1.5;
   background-color: var(--chat-bot-color);
   color: #ffffff;
+  margin: 0px;
 }
 body.loading {
   cursor: progress;
@@ -102,7 +104,6 @@ a:visited {
     justify-content: center;
     align-items: center;
     padding: 20px;
-    border: 1px;
     border-color: #000000;
 }
 .user-message-line {
@@ -113,13 +114,12 @@ a:visited {
 }
 
 .chat-icon {
-    margin-right: 10px;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    vertical-align: top;
-    padding: 20px;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  vertical-align: top;
+  padding: 20px;
+  align-self: flex-start; /* Add this line */
 }
 
 .message-content {
