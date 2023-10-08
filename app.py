@@ -37,12 +37,12 @@ def process_message(chat_history):
         return {"error": str(e)}
 
 def save_ip_counts():
-    with open('ip_counts.json', 'w') as f:
+    with open('data/ip_counts.json', 'w') as f:
         json.dump(ip_counts, f)
 
 def load_ip_counts():
     try:
-        with open('ip_counts.json', 'r') as f:
+        with open('data/ip_counts.json', 'r') as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
@@ -54,17 +54,16 @@ ip_counts = load_ip_counts()
 #-------------------------------------------------------------------
 
 def load_images_to_memory():
-    """Load images and store them in the images dictionary."""
-    with app.open_resource('Overburn.png', 'rb') as f:
+    with app.open_resource('img/Overburn.png', 'rb') as f:
         images['overburn.png'] = f.read()
 
-    with app.open_resource('GPT.png', 'rb') as f:
+    with app.open_resource('img/GPT.png', 'rb') as f:
         images['gpt.png'] = f.read()
 
-    #with app.open_resource('chat_img.png', 'rb') as f:
-    #    images['chat_img.png'] = f.read()
+    with app.open_resource('img/fox_img.png', 'rb') as f:
+        images['fox_img.png'] = f.read()
 
-    with app.open_resource('favicon.ico', 'rb') as f:
+    with app.open_resource('img/favicon.ico', 'rb') as f:
         images['favicon.ico'] = f.read()
 
 load_images_to_memory()
@@ -79,7 +78,7 @@ def serve_image(image_name):
 
 @app.route('/favicon.ico')
 def favicon():
-    return Response(images['favicon.ico'], content_type='image/vnd.microsoft.icon')
+    return Response(images['favicon.ico'], content_type='image/x-icon')
 
 #-------------------------------------------------------------------
 # page routes
@@ -125,7 +124,7 @@ def update_server():
         else:
             return 'Invalid secret word. Update aborted.'
 
-    with open('update.log', 'r') as logfile:
+    with open('data/update.log', 'r') as logfile:
         log_content = logfile.read()
 
     return render_template('update.html', log_content=log_content, app_start_time=app_start_time)

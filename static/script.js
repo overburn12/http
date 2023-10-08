@@ -153,20 +153,12 @@ function populateChatList() {
   oldChatsContainer.appendChild(deleteChatButton);
   oldChatsContainer.appendChild(clearStorageButton);
   oldChatsContainer.appendChild(document.createElement('br'));
-
-  /*
+  
   oldChatsContainer.appendChild(document.createElement('br'));
-  var fox_image = document.createElement('img');
-  fox_image.src = 'chat_img.png';
-  fox_image.style.width = '128px';
-  fox_image.style.height = '128px';
-  oldChatsContainer.appendChild(fox_image);
-  */
- oldChatsContainer.appendChild(document.createElement('br'));
   
   var link1 = document.createElement('a');
   link1.href = '/view_count';
-  link1.innerHTML = 'IP Counts';
+  link1.innerHTML = 'Counts';
   oldChatsContainer.appendChild(link1);
   oldChatsContainer.appendChild(document.createElement('br'));
 
@@ -178,9 +170,18 @@ function populateChatList() {
 
   var link3 = document.createElement('a');
   link3.href = '/about';
-  link3.innerHTML = 'about';
+  link3.innerHTML = 'About';
   oldChatsContainer.appendChild(link3);
-  
+  oldChatsContainer.appendChild(document.createElement('br'));
+  /*
+  oldChatsContainer.appendChild(document.createElement('br'));
+  var fox_image = document.createElement('img');
+  fox_image.src = 'fox_img.png';
+  fox_image.style.width = '256px';
+  fox_image.style.height = '256px';
+  oldChatsContainer.appendChild(fox_image);
+  */
+ 
   highlightSelectedChat();
 }
 

@@ -11,7 +11,7 @@ def prepend_to_file(filename, content):
 # Get current timestamp
 timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-with open('update.log', 'a') as logfile:
+with open('data/update.log', 'a') as logfile:
     result = subprocess.run(
         'git pull',
         shell=True,
@@ -26,6 +26,6 @@ with open('update.log', 'a') as logfile:
     log_content += result.stderr
 
     # Prepend the log content to the file
-    prepend_to_file('update.log', log_content)
+    prepend_to_file('data/update.log', log_content)
 
 subprocess.run('sudo systemctl restart flask.service', shell=True, text=True)
