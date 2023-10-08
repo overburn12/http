@@ -74,6 +74,18 @@ function addNewChat() {
   renderChatHistory(currentChatIndex);
 }
 
+function duplicateChat() {
+  var selectedChat = chatHistories[currentChatIndex];
+  var duplicatedChat = JSON.parse(JSON.stringify(selectedChat));
+  duplicatedChat.title = "Copy of " + duplicatedChat.title; // Set a new title for the duplicated chat
+  chatHistories.unshift(duplicatedChat); // Add the duplicated chat to the beginning of the chatHistories array
+  currentChatIndex = 0; // Set the current chat index to the duplicated chat
+  saveChatList();
+  clearFileInput();
+  populateChatList();
+  renderChatHistory(currentChatIndex);
+}
+
 function highlightSelectedChat() {
   // Remove highlighting from all old chats
   document.querySelectorAll('.old-chat-title').forEach(function(chatTitle) {
@@ -93,7 +105,7 @@ function populateChatList() {
   }
 
   var oldChatsContainer = document.getElementById('chats_list');
-  oldChatsContainer.innerHTML = '<center><h2>OpenAI Chat</h2></center>';
+  oldChatsContainer.innerHTML = '<center><h3>OpenAI Chat</h3></center>';
 
   chatHistories.forEach(function (chat, index) {
     var chatContainer = document.createElement('div');
@@ -129,8 +141,14 @@ function populateChatList() {
   clearStorageButton.textContent = 'Delete All';
   clearStorageButton.onclick = clearLocalStorage;
 
+  var duplicateChatButton = document.createElement('button');
+  duplicateChatButton.id = 'copy_button'; // using the same id for the button for styling purposes
+  duplicateChatButton.textContent = 'Copy';
+  duplicateChatButton.onclick = duplicateChat;
+
   oldChatsContainer.appendChild(newChatButton);
   oldChatsContainer.appendChild(renameChatButton);
+  oldChatsContainer.appendChild(duplicateChatButton);
   oldChatsContainer.appendChild(deleteChatButton);
   oldChatsContainer.appendChild(clearStorageButton);
 
