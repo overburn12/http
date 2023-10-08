@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Update Server</title>
+    <title>Overburn.org - Update</title>
     <style>
         a {
             color: white;
@@ -33,17 +33,17 @@
     </style>
 </head>
 <body>
+    <a href="{{ url_for('index') }}">index.html</a><br>
     <center>
-        <a href="{{ url_for('index') }}">index.html</a><br>
         <h1>Update Server</h1>
         <form action="{{ url_for('update_server') }}" method="post" onsubmit="savePassword(event)">
             <label for="secret_word">Password:</label>
             <input type="password" id="secret_word" name="secret_word" required>
             <input type="submit" value="Update Server">
         </form>
-        <h2>Server Uptime:</h2>
+        <h2>Uptime</h2>
         <p id="uptime"></p>
-        <h2>Server Logs:</h2>
+        <h2>Log</h2>
         <pre><code>{{ log_content }}</code></pre>
     </center>
     <script>
