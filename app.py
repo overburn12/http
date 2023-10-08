@@ -1,7 +1,7 @@
 from datetime import datetime
 import subprocess, openai, json, os
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, send_from_directory, Response
+from flask import Flask, render_template, request, jsonify, abort, Response
 from openai.error import OpenAIError
 
 app = Flask(__name__)
@@ -61,18 +61,21 @@ def load_images_to_memory():
     with app.open_resource('GPT.png', 'rb') as f:
         images['gpt.png'] = f.read()
 
+    #with app.open_resource('chat_img.png', 'rb') as f:
+    #    images['chat_img.png'] = f.read()
+
     with app.open_resource('favicon.ico', 'rb') as f:
         images['favicon.ico'] = f.read()
 
 load_images_to_memory()
 
-@app.route('/overburn.png')
-def user_icon():
-    return Response(images['overburn.png'], content_type='image/png')
-
-@app.route('/gpt.png')
-def gpt_icon():
-    return Response(images['gpt.png'], content_type='image/png')
+@app.route('/<image_name>.png')
+def serve_image(image_name):
+    image_file = images.get(f"{image_name}.png")
+    if image_file:
+        return Response(image_file, content_type='image/png')
+    else:
+        abort(404)  # Return a 404 error if the image is not found
 
 @app.route('/favicon.ico')
 def favicon():

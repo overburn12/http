@@ -105,7 +105,7 @@ function populateChatList() {
   }
 
   var oldChatsContainer = document.getElementById('chats_list');
-  oldChatsContainer.innerHTML = '<center><h3>OpenAI Chat</h3></center>';
+  oldChatsContainer.innerHTML = '<center><h3>Overburn</h3></center>';
 
   chatHistories.forEach(function (chat, index) {
     var chatContainer = document.createElement('div');
@@ -149,13 +149,38 @@ function populateChatList() {
   oldChatsContainer.appendChild(newChatButton);
   oldChatsContainer.appendChild(renameChatButton);
   oldChatsContainer.appendChild(duplicateChatButton);
+  oldChatsContainer.appendChild(document.createElement('br'));
   oldChatsContainer.appendChild(deleteChatButton);
   oldChatsContainer.appendChild(clearStorageButton);
+  oldChatsContainer.appendChild(document.createElement('br'));
 
-  //oldChatsContainer.innerHTML += '<img src="favicon.ico"><a href="/view_count">Connection Counts</a><br>'; 
-  //oldChatsContainer.innerHTML += '<img src="favicon.ico"><a href="/update">Update Server</a><br>';
-  //oldChatsContainer.innerHTML += '<img src="favicon.ico"><a href="/about">About</a>';
+  /*
+  oldChatsContainer.appendChild(document.createElement('br'));
+  var fox_image = document.createElement('img');
+  fox_image.src = 'chat_img.png';
+  fox_image.style.width = '128px';
+  fox_image.style.height = '128px';
+  oldChatsContainer.appendChild(fox_image);
+  */
+ oldChatsContainer.appendChild(document.createElement('br'));
+  
+  var link1 = document.createElement('a');
+  link1.href = '/view_count';
+  link1.innerHTML = 'IP Counts';
+  oldChatsContainer.appendChild(link1);
+  oldChatsContainer.appendChild(document.createElement('br'));
 
+  var link2 = document.createElement('a');
+  link2.href = '/update';
+  link2.innerHTML = 'Update';
+  oldChatsContainer.appendChild(link2);
+  oldChatsContainer.appendChild(document.createElement('br'));
+
+  var link3 = document.createElement('a');
+  link3.href = '/about';
+  link3.innerHTML = 'about';
+  oldChatsContainer.appendChild(link3);
+  
   highlightSelectedChat();
 }
 
