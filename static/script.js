@@ -31,7 +31,7 @@ function saveChatList(){
 
 function renderChatHistory() {
   var chat_title = document.getElementById('chat_title');
-  chat_title.innerHTML = '<center><h3>' + chatHistories[currentChatIndex].title + '</h3></center>';
+  chat_title.innerHTML = '<div class="chat-icon"></div><center><h3>' + chatHistories[currentChatIndex].title + '</h3></center>';
 
   var chatHistoryContainer = document.getElementById('chat_history');
   let htmlString = '';

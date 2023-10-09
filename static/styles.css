@@ -29,6 +29,7 @@
 #chat_input_container {
   width: var(--chat-content-width);
   display: block;
+  margin-left: 104px;
 }
 
 #chat_history {
@@ -49,7 +50,7 @@
 
 #the_page{
   margin: 0px;
-  margin-left: calc(var(--chat-list-width) + 40px);
+  margin-left: var(--chat-list-width);
   justify-content: center;
   align-items: center;
   padding: 0px;
@@ -131,6 +132,7 @@ a:visited {
   display: inline-block;
   width: 64px;
   height: 64px;
+  border-radius: 10px;
 }
 
 .message-content {
@@ -172,10 +174,12 @@ pre code {
   font-size: 14px;
   overflow-x: auto;
   color: #ffffff;
+  margin: 20px;
+  margin-right: 30px;
 }
 
 .code{
-  padding: 5px;
+  padding: 10px;
 }
 
 pre code div.codeblock-title {
