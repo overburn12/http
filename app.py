@@ -54,17 +54,12 @@ ip_counts = load_ip_counts()
 #-------------------------------------------------------------------
 
 def load_images_to_memory():
-    with app.open_resource('img/Overburn.png', 'rb') as f:
-        images['overburn.png'] = f.read()
-
-    with app.open_resource('img/GPT.png', 'rb') as f:
-        images['gpt.png'] = f.read()
-
-    with app.open_resource('img/fox_img.png', 'rb') as f:
-        images['fox_img.png'] = f.read()
-
-    with app.open_resource('img/favicon.ico', 'rb') as f:
-        images['favicon.ico'] = f.read()
+    image_folder = 'img/'
+    image_filenames = os.listdir(image_folder)
+    
+    for filename in image_filenames:
+        with app.open_resource(os.path.join(image_folder, filename), 'rb') as f:
+            images[filename] = f.read()
 
 load_images_to_memory()
 

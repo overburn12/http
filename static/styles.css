@@ -40,15 +40,16 @@
 #chat_title{
   background-color: var(--chat-list-color);
   width: 100%;
+  height: 30px;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 5px;
+  padding: 20px;
 }
 
 #the_page{
   margin: 0px;
-  margin-left: calc(var(--chat-list-width) + 10px);
+  margin-left: calc(var(--chat-list-width) + 40px);
   justify-content: center;
   align-items: center;
   padding: 0px;
@@ -84,17 +85,24 @@ body {
   background-color: var(--chat-bot-color);
   color: #ffffff;
   margin: 0px;
+  padding: 0px;
 }
 body.loading {
   cursor: progress;
 }
+
 a {
   color: #ffffff; /* Desired link color */
   text-decoration: none; /* Remove underline */
 }
-
 a:visited {
   color: #ffffff; /* Desired link color for visited links */
+}
+
+.list-icon {
+  vertical-align: middle;
+  padding: 3px;
+  margin-right: 5px;
 }
 
 .user-message-line,
@@ -114,12 +122,15 @@ a:visited {
 }
 
 .chat-icon {
-  height: 100%;
   justify-content: center;
   align-items: center;
   vertical-align: top;
-  padding: 20px;
-  align-self: flex-start; /* Add this line */
+  margin: 20px;
+  align-self: flex-start;
+  overflow: hidden;
+  display: inline-block;
+  width: 64px;
+  height: 64px;
 }
 
 .message-content {
@@ -173,12 +184,17 @@ pre code div.codeblock-title {
   font-weight: bold;
 }
 
-.old-chat-title {
+.chat-title {
     cursor: pointer;
     color: #ffffff;
     padding: 5px;
     border-radius: 10px;
+    margin: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+
 
 .highlighted-chat {
     background-color: var(--chat-user-color);

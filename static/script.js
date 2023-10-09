@@ -88,12 +88,12 @@ function duplicateChat() {
 
 function highlightSelectedChat() {
   // Remove highlighting from all old chats
-  document.querySelectorAll('.old-chat-title').forEach(function(chatTitle) {
+  document.querySelectorAll('.chat-title').forEach(function(chatTitle) {
     chatTitle.classList.remove('highlighted-chat');
   });
 
   // Add highlighting to the selected chat
-  document.querySelectorAll('.old-chat-title')[currentChatIndex].classList.add('highlighted-chat');
+  document.querySelectorAll('.chat-title')[currentChatIndex].classList.add('highlighted-chat');
 }
 
 function populateChatList() {
@@ -107,11 +107,30 @@ function populateChatList() {
   var oldChatsContainer = document.getElementById('chats_list');
   oldChatsContainer.innerHTML = '<center><h3>Overburn</h3></center>';
 
+  var chatIcon = document.createElement('img');
+  chatIcon.src = 'chat-icon.png';
+  chatIcon.classList.add('list-icon');
+
+  var deleteIcon = document.createElement('img');
+  deleteIcon.src = 'delete-icon.png';
+  deleteIcon.classList.add('list-icon');
+  deleteIcon.onclick = function () {
+    deleteCurrentChat();
+  };
+  
+  var renameIcon = document.createElement('img');
+  renameIcon.src = 'rename-icon.png';
+  renameIcon.classList.add('list-icon');
+  renameIcon.onclick = function () {
+    renameCurrentChat();
+  };
+
   chatHistories.forEach(function (chat, index) {
     var chatContainer = document.createElement('div');
     var chatTitle = document.createElement('div');
-    chatTitle.classList.add('old-chat-title');
-    chatTitle.textContent = '\u2022 ' + chat.title; // Add the bullet point before the chat title
+    chatTitle.classList.add('chat-title');
+    chatTitle.appendChild(chatIcon.cloneNode(true));
+    chatTitle.appendChild(document.createTextNode(chat.title));
     chatTitle.onclick = function () {
       loadChat(index);
     };
@@ -173,14 +192,6 @@ function populateChatList() {
   link3.innerHTML = 'About';
   oldChatsContainer.appendChild(link3);
   oldChatsContainer.appendChild(document.createElement('br'));
-  /*
-  oldChatsContainer.appendChild(document.createElement('br'));
-  var fox_image = document.createElement('img');
-  fox_image.src = 'fox_img.png';
-  fox_image.style.width = '256px';
-  fox_image.style.height = '256px';
-  oldChatsContainer.appendChild(fox_image);
-  */
  
   highlightSelectedChat();
 }
