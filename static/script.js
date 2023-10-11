@@ -1,5 +1,6 @@
 var chatHistories = [];
 var currentChatIndex = null;
+var currentModels = null;
 
 window.addEventListener('load', function () {
   currentChatIndex = 0;
@@ -14,7 +15,36 @@ window.addEventListener('load', function () {
       sendMessage(); // Call the sendMessage function to send the message
     }
   });
+  init_chat_list();
+  loadModels(); // Load the API models when the page loads
 });
+
+async function loadModels() {
+  try {
+    const response = await fetch('/models'); // Fetch the models from the Flask route
+
+    if (response.ok) {
+      const models = await response.text(); // Get the list of models as text
+
+      // Split the models by line breaks and populate the drop-down box options
+      const modelOptions = models.trim().split('<br>');
+      const dropdown = document.getElementById('chat-model');
+      dropdown.innerHTML = '';
+
+      modelOptions.forEach(function (option) {
+        const optionElement = document.createElement('option');
+        optionElement.text = option;
+        optionElement.value = option;
+
+        dropdown.add(optionElement);
+      });
+    } else {
+      console.error('Error fetching API models: ' + response.status);
+    }
+  } catch (error) {
+    console.error('Error fetching API models:', error);
+  }
+}
 
 function toggleFileContent(headerElement) {
   const fileBody = headerElement.parentNode.querySelector('.file-body');
@@ -104,13 +134,13 @@ function populateChatList() {
     chatHistories = [{ title: "New Chat", messages: [] }];
   }
 
-  var oldChatsContainer = document.getElementById('chats_list');
-  oldChatsContainer.innerHTML = '<center><h3>Overburn</h3></center>';
+  var ChatsListContainer = document.getElementById('list_container');
+  ChatsListContainer.innerHTML = '';
 
   var chatIcon = document.createElement('img');
   chatIcon.src = 'chat-icon.png';
   chatIcon.classList.add('list-icon');
-
+/*
   var deleteIcon = document.createElement('img');
   deleteIcon.src = 'delete-icon.png';
   deleteIcon.classList.add('list-icon');
@@ -124,7 +154,7 @@ function populateChatList() {
   renameIcon.onclick = function () {
     renameCurrentChat();
   };
-
+*/
   chatHistories.forEach(function (chat, index) {
     var chatContainer = document.createElement('div');
     var chatTitle = document.createElement('div');
@@ -136,64 +166,75 @@ function populateChatList() {
     };
 
     chatContainer.appendChild(chatTitle);
-    oldChatsContainer.appendChild(chatContainer);
+    ChatsListContainer.appendChild(chatContainer);
   });
-
-  // Add management buttons
-  var newChatButton = document.createElement('button');
-  newChatButton.id = 'reset_button';
-  newChatButton.textContent = 'New';
-  newChatButton.onclick = addNewChat;
-
-  var deleteChatButton = document.createElement('button');
-  deleteChatButton.id = 'delete_button';
-  deleteChatButton.textContent = 'Delete';
-  deleteChatButton.onclick = deleteCurrentChat;
-
-  var renameChatButton = document.createElement('button');
-  renameChatButton.id = 'rename_button';
-  renameChatButton.textContent = 'Rename';
-  renameChatButton.onclick = renameCurrentChat;
-
-  var clearStorageButton = document.createElement('button');
-  clearStorageButton.id = 'clear_storage_button';
-  clearStorageButton.textContent = 'Delete All';
-  clearStorageButton.onclick = clearLocalStorage;
-
-  var duplicateChatButton = document.createElement('button');
-  duplicateChatButton.id = 'copy_button'; // using the same id for the button for styling purposes
-  duplicateChatButton.textContent = 'Copy';
-  duplicateChatButton.onclick = duplicateChat;
-
-  oldChatsContainer.appendChild(newChatButton);
-  oldChatsContainer.appendChild(renameChatButton);
-  oldChatsContainer.appendChild(duplicateChatButton);
-  oldChatsContainer.appendChild(document.createElement('br'));
-  oldChatsContainer.appendChild(deleteChatButton);
-  oldChatsContainer.appendChild(clearStorageButton);
-  oldChatsContainer.appendChild(document.createElement('br'));
-  
-  oldChatsContainer.appendChild(document.createElement('br'));
-  
-  var link1 = document.createElement('a');
-  link1.href = '/view_count';
-  link1.innerHTML = 'Counts';
-  oldChatsContainer.appendChild(link1);
-  oldChatsContainer.appendChild(document.createElement('br'));
-
-  var link2 = document.createElement('a');
-  link2.href = '/update';
-  link2.innerHTML = 'Update';
-  oldChatsContainer.appendChild(link2);
-  oldChatsContainer.appendChild(document.createElement('br'));
-
-  var link3 = document.createElement('a');
-  link3.href = '/about';
-  link3.innerHTML = 'About';
-  oldChatsContainer.appendChild(link3);
-  oldChatsContainer.appendChild(document.createElement('br'));
  
+  /*init_chat_list();*/
   highlightSelectedChat();
+}
+
+function init_chat_list(){
+  
+  var chat_list_head = document.getElementById('list_head');
+  chat_list_head.innerHTML = '<select id="chat-model" name="chat-model"></select>';
+  loadModels();
+  
+  // Add management buttons
+    var chat_list_end = document.getElementById('list_end');
+    chat_list_end.innerHTML = '';
+
+    var newChatButton = document.createElement('button');
+    newChatButton.id = 'reset_button';
+    newChatButton.textContent = 'New';
+    newChatButton.onclick = addNewChat;
+  
+    var deleteChatButton = document.createElement('button');
+    deleteChatButton.id = 'delete_button';
+    deleteChatButton.textContent = 'Delete';
+    deleteChatButton.onclick = deleteCurrentChat;
+  
+    var renameChatButton = document.createElement('button');
+    renameChatButton.id = 'rename_button';
+    renameChatButton.textContent = 'Rename';
+    renameChatButton.onclick = renameCurrentChat;
+  
+    var clearStorageButton = document.createElement('button');
+    clearStorageButton.id = 'clear_storage_button';
+    clearStorageButton.textContent = 'Delete All';
+    clearStorageButton.onclick = clearLocalStorage;
+  
+    var duplicateChatButton = document.createElement('button');
+    duplicateChatButton.id = 'copy_button'; // using the same id for the button for styling purposes
+    duplicateChatButton.textContent = 'Copy';
+    duplicateChatButton.onclick = duplicateChat;
+  
+    chat_list_end.appendChild(newChatButton);
+    chat_list_end.appendChild(renameChatButton);
+    chat_list_end.appendChild(duplicateChatButton);
+    chat_list_end.appendChild(document.createElement('br'));
+    chat_list_end.appendChild(deleteChatButton);
+    chat_list_end.appendChild(clearStorageButton);
+    chat_list_end.appendChild(document.createElement('br'));
+    
+    chat_list_end.appendChild(document.createElement('br'));
+    
+    var link1 = document.createElement('a');
+    link1.href = '/view_count';
+    link1.innerHTML = 'Counts';
+    chat_list_end.appendChild(link1);
+    chat_list_end.appendChild(document.createElement('br'));
+  
+    var link2 = document.createElement('a');
+    link2.href = '/update';
+    link2.innerHTML = 'Update';
+    chat_list_end.appendChild(link2);
+    chat_list_end.appendChild(document.createElement('br'));
+  
+    var link3 = document.createElement('a');
+    link3.href = '/about';
+    link3.innerHTML = 'About';
+    chat_list_end.appendChild(link3);
+    chat_list_end.appendChild(document.createElement('br'));
 }
 
 function clearLocalStorage() {
@@ -344,11 +385,11 @@ async function generateTitle(chat_history) {
   temp_copy.messages.push(userMessage);
 
   try {
-    // Send an additional request to get a summary for the chat title
+    const selectedModel = document.getElementById('chat-model').value;
     const summaryResponse = await fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_message: temp_copy.messages })
+      body: JSON.stringify({ user_message: temp_copy.messages, model: selectedModel })
     });
 
     const summaryData = await summaryResponse.json();
@@ -357,13 +398,19 @@ async function generateTitle(chat_history) {
       throw new Error(summaryData.bot_message.error);
     }
 
-    const botMessage = { role: 'assistant', content: summaryData.bot_message.content };
-    return botMessage.content; // Return the content directly
+    const botMessage = { role: 'assistant', content: summaryData.bot_message.content.replace(/["']/g, "") };
+    const spaceCount = (botMessage.match(/ /g) || []).length;
+
+    if (spaceCount > 4) {
+      return "too long :(";
+    } else {
+      return botMessage.content;
+    }
 
   } catch (error) {
-    // ... (existing error handling code)
+    return "error";
   }
-  return "Error";
+  return "catchall";
 }
 
 async function sendMessage() {
@@ -381,10 +428,12 @@ async function sendMessage() {
   var isNewChat = chatHistories[currentChatIndex].messages.length === 1; 
 
   try {
+    const selectedModel = document.getElementById('chat-model').value; // Get selected model from the drop-down
+
     const response = await fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_message: chatHistories[currentChatIndex].messages })
+      body: JSON.stringify({ user_message: chatHistories[currentChatIndex].messages, model: selectedModel }) // Include the selected model in the request
     });
 
     const data = await response.json();
@@ -412,11 +461,11 @@ async function sendMessage() {
     userMessageElement.classList.remove('locked');
   }
   
-  if (isNewChat) {
+  /*if (isNewChat) {
     var newTitle = await generateTitle(chatHistories[currentChatIndex]);
-    chatHistories[currentChatIndex].title = newTitle.replace(/"/g, "");
+    chatHistories[currentChatIndex].title = newTitle.replace(/&quot;/g, '');
     saveChatList();
     populateChatList();
-  }
+  }*/
   
 }

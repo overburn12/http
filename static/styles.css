@@ -71,6 +71,14 @@
   background-color: var(--chat-list-color);
 }
 
+#list_head {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
 #reset_button {
   margin-top: 20px;
 }

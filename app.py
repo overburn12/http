@@ -1,40 +1,88 @@
 from datetime import datetime
-import subprocess, openai, json, os
+import subprocess, openai, json, os, requests
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, abort, Response
 from openai.error import OpenAIError
 
 app = Flask(__name__)
-#app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
+#-------------------------------------------------------------------
+# app variables 
+#-------------------------------------------------------------------
+
 app_start_time = int(datetime.utcnow().timestamp())
 
 load_dotenv() 
 openai.api_key = os.getenv("MY_API_KEY")
+secret_password = os.getenv("SECRET_PASSWORD")
+running_ollama = os.getenv("RUNNING_OLLAMA")
+OLLAMA_API_URL = "http://localhost:11434/api/generate"
 
 images = {}
 
 #-------------------------------------------------------------------
-# functions 
+# chat functions 
 #-------------------------------------------------------------------
 
-def generate_model_list():
-    response = ''
-    model_list = openai.Model.list()
-    sorted_models = sorted(model_list['data'], key=lambda x: x['id'])
-    for model in sorted_models:
-        response += model['id'] + '<br>'
-    return response
-
-def process_message(chat_history):
+def process_message(chat_history, model):
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo-16k",
+            model=model,
             messages=chat_history  
         )
         ai_message = {"role": "assistant", "content": response['choices'][0]['message']['content']}
         return ai_message
     except OpenAIError as e:
         return {"error": str(e)}
+
+def process_ollama_message(chat_history):
+    prompt = chat_history[-1]["content"]
+    
+    response = requests.post(
+        OLLAMA_API_URL,
+        headers={"Authorization": "Bearer YOUR_API_TOKEN"},
+        json={
+            "model": "everythinglm",
+            "prompt": prompt
+        },
+        stream=True
+    )
+    
+    generated_text = ''
+    done = False
+    
+    for line in response.iter_lines():
+        if line:
+            decoded_line = line.decode('utf-8')
+            json_data = json.loads(decoded_line)
+            generated_text += json_data.get("response", "")
+            done = json_data.get("done", False)
+            
+            if done:
+                break
+                
+    if done:
+        return {"role": "assistant", "content": generated_text}
+    else:
+        return {"error": "An error occurred while generating the response."}
+
+#-------------------------------------------------------------------
+# functions 
+#-------------------------------------------------------------------
+
+def generate_model_list():
+    sorted_models = ['gpt-3.5-turbo-16k','gpt-3.5-turbo','gpt-3.5-turbo-0301','gpt-3.5-turbo-0613','gpt-3.5-turbo-16k-0613','gpt-4']
+    response = ''
+
+    if running_ollama == 'true':
+        sorted_models.append('LOCALHOST')
+
+    for i, model in enumerate(sorted_models):
+        response += model
+        if i != len(sorted_models) - 1:  # Check if current model is not the last one
+            response += '<br>'
+    return response
+
 
 def save_ip_counts():
     with open('data/ip_counts.json', 'w') as f:
@@ -79,10 +127,6 @@ def favicon():
 # page routes
 #-------------------------------------------------------------------
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
 @app.route('/chat', methods=['POST'])
 def chat():
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
@@ -90,8 +134,16 @@ def chat():
     save_ip_counts()  # Save counts to file after updating them
 
     user_message = request.json['user_message']
-    bot_message = process_message(user_message)
+    model = request.json.get('model', 'gpt-3.5-turbo-16k')  # Retrieve the selected model or use a default model
+    if(model == 'LOCALHOST'):# i used 'LOCALHOST' to denote the use of the local ollama model
+        bot_message = process_ollama_message(user_message) 
+    else:
+        bot_message = process_message(user_message, model)
     return jsonify({'bot_message': bot_message})
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/about', methods=['GET'])
 def about_page():
@@ -112,12 +164,8 @@ def view_count_page():
 @app.route('/update', methods=['GET', 'POST'])
 def update_server():
     if request.method == 'POST':
-        secret_password = os.getenv("SECRET_PASSWORD")
         if request.form.get("secret_word") == secret_password:
             subprocess.run('python3 updater.py', shell=True)
-            return 'Server updated successfully'
-        else:
-            return 'Invalid secret word. Update aborted.'
 
     with open('data/update.log', 'r') as logfile:
         log_content = logfile.read()

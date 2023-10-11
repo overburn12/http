@@ -7,22 +7,26 @@
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-  <div id="chats_list"></div>
+  <div id="chats_list">
+    <div id="list_head"></div>
+    <div id="list_container"></div>
+    <div id="list_end"></div>
+  </div>
   <div id="the_page">
-    <div id="chat_title"><center><h2></h2></center></div>
+    <div id="chat_title"></div>
     <div id="chat_history"></div>
     <div id="chat_bottom">
       <center>
         <div id="chat_input_container">
-        <div id="file_upload">
-          <input type="file" id="codeFiles" multiple accept=".txt, .js, .py, .java, .c, .cpp, .h, .html, .css, .xml, .json, .csv, .md, .sh, .bat, .cmd, .sql, .ini, .cfg, .conf, .log" style="display:none;" onchange="handleFiles()">
-          <button id="uploadButton" onclick="document.getElementById('codeFiles').click()">Attach Files</button>
+          <div id="file_upload">
+            <input type="file" id="codeFiles" multiple accept=".txt, .js, .py, .java, .c, .cpp, .h, .html, .css, .xml, .json, .csv, .md, .sh, .bat, .cmd, .sql, .ini, .cfg, .conf, .log" style="display:none;" onchange="handleFiles()">
+            <button id="uploadButton" onclick="document.getElementById('codeFiles').click()">Attach Files</button>
+          </div>
+          <div id="message_entry">
+            <textarea id="user_message"></textarea>
+            <button id="send_button" onclick="sendMessage()">Send</button>
+          </div>    
         </div>
-        <div id="message_entry">
-          <textarea id="user_message"></textarea>
-          <button id="send_button" onclick="sendMessage()">Send</button>
-        </div>    
-      </div>
       </center>
     </div> 
   </div>
