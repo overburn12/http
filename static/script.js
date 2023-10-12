@@ -174,67 +174,28 @@ function populateChatList() {
 }
 
 function init_chat_list(){
-  
   var chat_list_head = document.getElementById('list_head');
   chat_list_head.innerHTML = '<select id="chat-model" name="chat-model"></select>';
   loadModels();
   
-  // Add management buttons
-    var chat_list_end = document.getElementById('list_end');
-    chat_list_end.innerHTML = '';
-
-    var newChatButton = document.createElement('button');
-    newChatButton.id = 'reset_button';
-    newChatButton.textContent = 'New';
-    newChatButton.onclick = addNewChat;
+  //add management buttons
+  var chat_list_end = document.getElementById('list_end');
+  chat_list_end.innerHTML = `
+    <button id="reset_button" onclick="addNewChat()">New</button>
+    <button id="rename_button" onclick="renameCurrentChat()">Rename</button>
+    <button id="copy_button" onclick="duplicateChat()">Copy</button>
+    <br>
+    <button id="delete_button" onclick="deleteCurrentChat()">Delete</button>
+    <button id="clear_storage_button" onclick="clearLocalStorage()">Delete All</button>
+    <br><br>
+  `;
   
-    var deleteChatButton = document.createElement('button');
-    deleteChatButton.id = 'delete_button';
-    deleteChatButton.textContent = 'Delete';
-    deleteChatButton.onclick = deleteCurrentChat;
-  
-    var renameChatButton = document.createElement('button');
-    renameChatButton.id = 'rename_button';
-    renameChatButton.textContent = 'Rename';
-    renameChatButton.onclick = renameCurrentChat;
-  
-    var clearStorageButton = document.createElement('button');
-    clearStorageButton.id = 'clear_storage_button';
-    clearStorageButton.textContent = 'Delete All';
-    clearStorageButton.onclick = clearLocalStorage;
-  
-    var duplicateChatButton = document.createElement('button');
-    duplicateChatButton.id = 'copy_button'; // using the same id for the button for styling purposes
-    duplicateChatButton.textContent = 'Copy';
-    duplicateChatButton.onclick = duplicateChat;
-  
-    chat_list_end.appendChild(newChatButton);
-    chat_list_end.appendChild(renameChatButton);
-    chat_list_end.appendChild(duplicateChatButton);
-    chat_list_end.appendChild(document.createElement('br'));
-    chat_list_end.appendChild(deleteChatButton);
-    chat_list_end.appendChild(clearStorageButton);
-    chat_list_end.appendChild(document.createElement('br'));
-    
-    chat_list_end.appendChild(document.createElement('br'));
-    
-    var link1 = document.createElement('a');
-    link1.href = '/view_count';
-    link1.innerHTML = 'Counts';
-    chat_list_end.appendChild(link1);
-    chat_list_end.appendChild(document.createElement('br'));
-  
-    var link2 = document.createElement('a');
-    link2.href = '/update';
-    link2.innerHTML = 'Update';
-    chat_list_end.appendChild(link2);
-    chat_list_end.appendChild(document.createElement('br'));
-  
-    var link3 = document.createElement('a');
-    link3.href = '/about';
-    link3.innerHTML = 'About';
-    chat_list_end.appendChild(link3);
-    chat_list_end.appendChild(document.createElement('br'));
+  //add page links  
+  chat_list_end.innerHTML += `
+    <a href="/view_count">Counts</a><br>
+    <a href="/update">Update</a><br>
+    <a href="/about">About</a><br>
+  `;
 }
 
 function clearLocalStorage() {
@@ -408,11 +369,10 @@ async function generateTitle(chat_history) {
   } catch (error) {
     return "error";
   }
-  return "catchall";
 }
 
-let tempBotMessage = { role: 'assistant', content: '' };
 
+let tempBotMessage = { role: 'assistant', content: '' };
 async function sendMessage() {
   var userMessageElement = document.getElementById('user_message');
   var userMessageContent = userMessageElement.value;
@@ -440,10 +400,10 @@ async function sendMessage() {
     // Start reading the stream
     let buffer = "";
 
-    //init the ui for bot response
+    //add a blank bot response to the end of the chat history, this is where the api stream will be saved
     chatHistories[currentChatIndex].messages.push(tempBotMessage);
-    const lastElement = chatHistories[currentChatIndex].messages.length - 1;
-    const responseIndex = currentChatIndex;
+    const lastElement = chatHistories[currentChatIndex].messages.length - 1; //the index of the specific message we are directing the api data to
+    const responseIndex = currentChatIndex; //incase currentChatIndex changes during the api stream
 
     renderChatHistory();
 
@@ -462,25 +422,18 @@ async function sendMessage() {
         }
 
         const objectStr = buffer.slice(0, endOfObjectIndex + 2);
-        buffer = buffer.slice(endOfObjectIndex + 2);
-        console.log("Raw JSON string:", objectStr);  // Debugging line to see raw data---------------------------------
-
-
-      
+        buffer = buffer.slice(endOfObjectIndex + 2);    
         try {
           const jsonMessage = JSON.parse(objectStr);
           const finishReason = jsonMessage.bot_message.choices[0].finish_reason;
           
           if (finishReason) {
             // This is the last message
-            
-            //this line is not needed anymore since we created a botmsg at the beginning of the stream
-            //chatHistories[currentChatIndex].messages.push(tempBotMessage);
+            saveChatList(); //save the chat after the bot response is finished
             tempBotMessage = { role: 'assistant', content: '' };
           } else {
             // Append to the temporary bot message
             const chunk_msg = jsonMessage.bot_message.choices[0].delta.content;
-            //console.log("Received chunk:", chunk_msg);  // Debugging line-----------------------------------------------------------
             if (chunk_msg !== undefined) {
               chatHistories[responseIndex].messages[lastElement].content += chunk_msg;
             }
@@ -505,62 +458,12 @@ async function sendMessage() {
     document.body.classList.remove('loading');
     userMessageElement.classList.remove('locked');
   }
-}
-
-
-async function sendMessage_OLD_VERSION() {
-  var userMessageElement = document.getElementById('user_message');
-  var userMessageContent = userMessageElement.value;
-  var userMessage = { role: 'user', content: userMessageContent };
-  
-  // Add to existing chat
-  chatHistories[currentChatIndex].messages.push(userMessage); 
-
-  // Add loading and locked classes
-  document.body.classList.add('loading');
-  userMessageElement.classList.add('locked');
-
-  var isNewChat = chatHistories[currentChatIndex].messages.length === 1; 
-
-  try {
-    const selectedModel = document.getElementById('chat-model').value; // Get selected model from the drop-down
-
-    const response = await fetch('/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_message: chatHistories[currentChatIndex].messages, model: selectedModel }) // Include the selected model in the request
-    });
-
-    const data = await response.json();
-
-    if (data.bot_message.error) {
-      throw new Error(data.bot_message.error);
-    }
-
-    const botMessage = { role: 'assistant', content: data.bot_message.content };
-    chatHistories[currentChatIndex].messages.push(botMessage);
-    saveChatList();
-    renderChatHistory();
-    
-    // Clear the text field if successful
-    userMessageElement.value = '';
-  } catch (error) {
-    console.error(error);
-
-    // Remove the last user message from the chat history if there's an error
-    chatHistories[currentChatIndex].messages.pop();
-    renderChatHistory();
-  } finally {
-    // Remove loading and locked classes
-    document.body.classList.remove('loading');
-    userMessageElement.classList.remove('locked');
-  }
-  
   /*if (isNewChat) {
     var newTitle = await generateTitle(chatHistories[currentChatIndex]);
     chatHistories[currentChatIndex].title = newTitle.replace(/&quot;/g, '');
     saveChatList();
     populateChatList();
   }*/
-  
 }
+
+  

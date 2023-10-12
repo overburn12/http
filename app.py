@@ -1,5 +1,5 @@
 from datetime import datetime
-import subprocess, openai, json, os, requests, httpx
+import subprocess, openai, json, os, requests
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, abort, Response
 from openai.error import OpenAIError
@@ -16,7 +16,7 @@ openai_api_key = os.getenv("MY_API_KEY")
 secret_password = os.getenv("SECRET_PASSWORD")
 running_ollama = os.getenv("RUNNING_OLLAMA")
 ollama_model = os.getenv("OLLAMA_MODEL")
-OLLAMA_API_URL = "http://localhost:11434/api/generate"
+OLLAMA_API_URL = os.getenv("OLLAMA_API_URL")
 
 images = {}
 app_start_time = int(datetime.utcnow().timestamp())
@@ -34,7 +34,6 @@ def process_openai_message(chat_history, model):
         )
         for message in response:
             yield message
-            #print(message)#--------------------------------------------------------------------------------
     except OpenAIError as e:
         yield {"error": str(e)}
 
@@ -55,7 +54,6 @@ def process_ollama_message(chat_history):
         if line:
             decoded_line = line.decode('utf-8')
             json_data = json.loads(decoded_line)
-            #print(json_data) #---------------------------------------------------------------------------------------------
             generated_text = json_data.get("response", "")
             done = json_data.get("done", False)
 
@@ -68,38 +66,6 @@ def process_ollama_message(chat_history):
                 }]
             }
 
-
-    
-def process_ollama_message_VERY_OLD(chat_history):
-    prompt = chat_history[-1]["content"]
-    
-    response = requests.post(
-        OLLAMA_API_URL,
-        headers={"Authorization": "Bearer YOUR_API_TOKEN"},
-        json={
-            "model": ollama_model,
-            "prompt": prompt
-        },
-        stream=True
-    )
-    
-    generated_text = ''
-    done = False
-    
-    for line in response.iter_lines():
-        if line:
-            decoded_line = line.decode('utf-8')
-            json_data = json.loads(decoded_line)
-            generated_text += json_data.get("response", "")
-            done = json_data.get("done", False)
-            
-            if done:
-                break
-                
-    if done:
-        return {"role": "assistant", "content": generated_text}
-    else:
-        return {"error": "An error occurred while generating the response."}
 
 #-------------------------------------------------------------------
 # functions 

@@ -8,14 +8,20 @@
   --code-title-color: #413434;
 }
 
-#user_message {
+#chat_title{
+  background-color: var(--chat-list-color);
   width: 100%;
-  height: 10em;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
 }
 
-#send_button {
-  width: 80px;
-  display: inline;
+#chat_history {
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 #chat_bottom{
@@ -32,20 +38,14 @@
   margin-left: 104px;
 }
 
-#chat_history {
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
+#user_message {
+  width: 100%;
+  height: 10em;
 }
 
-#chat_title{
-  background-color: var(--chat-list-color);
-  width: 100%;
-  height: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
+#send_button {
+  width: 80px;
+  display: inline;
 }
 
 #the_page{
@@ -66,10 +66,14 @@
   left: 0;
   bottom: 0;
   width: var(--chat-list-width);
-  overflow-y: auto;
   padding: 20px;
   background-color: var(--chat-list-color);
 }
+#list_container{
+  overflow-y: auto;
+  max-height: 600px;
+}
+
 
 #list_head {
   display: flex;
@@ -77,6 +81,10 @@
   align-items: center;
   flex-direction: column;
   margin-bottom: 20px;
+}
+
+#list_end {
+  height: 150px;
 }
 
 #reset_button {
