@@ -302,7 +302,6 @@ function render_codeblocks(input_message) {
   return output_message;
 }
 
-
 function renderSingleMessage(message) {
   var roleName = message.role === 'user' ? 'overburn.png' : 'gpt.png';
   var className = message.role === 'user' ? 'chat-icon' : 'chat-icon';
@@ -316,7 +315,6 @@ function renderSingleMessage(message) {
     </div>
   `;
 }
-
 
 function clearFileInput() {
   document.getElementById('codeFiles').value = '';
@@ -413,7 +411,104 @@ async function generateTitle(chat_history) {
   return "catchall";
 }
 
+let tempBotMessage = { role: 'assistant', content: '' };
+
 async function sendMessage() {
+  var userMessageElement = document.getElementById('user_message');
+  var userMessageContent = userMessageElement.value;
+  var userMessage = { role: 'user', content: userMessageContent };
+  
+  // Add to existing chat
+  chatHistories[currentChatIndex].messages.push(userMessage); 
+
+  // Add loading and locked classes
+  document.body.classList.add('loading');
+  userMessageElement.classList.add('locked');
+
+  try {
+    const selectedModel = document.getElementById('chat-model').value;
+    
+    const response = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_message: chatHistories[currentChatIndex].messages, model: selectedModel })
+    });
+
+    // Assume the response body is a ReadableStream
+    const reader = response.body.getReader();
+    
+    // Start reading the stream
+    let buffer = "";
+
+    //init the ui for bot response
+    chatHistories[currentChatIndex].messages.push(tempBotMessage);
+    const lastElement = chatHistories[currentChatIndex].messages.length - 1;
+    const responseIndex = currentChatIndex;
+
+    renderChatHistory();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      
+      if (done) break;
+
+      buffer += new TextDecoder("utf-8").decode(value);
+
+      // Try to find the complete JSON objects in the buffer
+      while (true) {
+        const endOfObjectIndex = buffer.indexOf("}}");
+        if (endOfObjectIndex === -1) {
+          break;
+        }
+
+        const objectStr = buffer.slice(0, endOfObjectIndex + 2);
+        buffer = buffer.slice(endOfObjectIndex + 2);
+        console.log("Raw JSON string:", objectStr);  // Debugging line to see raw data---------------------------------
+
+
+      
+        try {
+          const jsonMessage = JSON.parse(objectStr);
+          const finishReason = jsonMessage.bot_message.choices[0].finish_reason;
+          
+          if (finishReason) {
+            // This is the last message
+            
+            //this line is not needed anymore since we created a botmsg at the beginning of the stream
+            //chatHistories[currentChatIndex].messages.push(tempBotMessage);
+            tempBotMessage = { role: 'assistant', content: '' };
+          } else {
+            // Append to the temporary bot message
+            const chunk_msg = jsonMessage.bot_message.choices[0].delta.content;
+            //console.log("Received chunk:", chunk_msg);  // Debugging line-----------------------------------------------------------
+            if (chunk_msg !== undefined) {
+              chatHistories[responseIndex].messages[lastElement].content += chunk_msg;
+            }
+          }
+          // Always re-render to show updates
+          renderChatHistory();
+        } catch (e) {
+          console.error("Error parsing JSON: ", e);
+        }
+      }
+    }
+    // Clear the text field if successful
+    userMessageElement.value = '';
+  } catch (error) {
+    console.error(error);
+    
+    // Remove the last user message from the chat history if there's an error
+    chatHistories[currentChatIndex].messages.pop();
+    renderChatHistory();
+  } finally {
+    // Remove loading and locked classes
+    document.body.classList.remove('loading');
+    userMessageElement.classList.remove('locked');
+  }
+}
+
+
+async function sendMessage_OLD_VERSION() {
   var userMessageElement = document.getElementById('user_message');
   var userMessageContent = userMessageElement.value;
   var userMessage = { role: 'user', content: userMessageContent };

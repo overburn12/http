@@ -1,5 +1,5 @@
 from datetime import datetime
-import subprocess, openai, json, os, requests
+import subprocess, openai, json, os, requests, httpx
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, abort, Response
 from openai.error import OpenAIError
@@ -10,39 +10,74 @@ app = Flask(__name__)
 # app variables 
 #-------------------------------------------------------------------
 
-app_start_time = int(datetime.utcnow().timestamp())
-
 load_dotenv() 
 openai.api_key = os.getenv("MY_API_KEY")
+openai_api_key = os.getenv("MY_API_KEY")
 secret_password = os.getenv("SECRET_PASSWORD")
 running_ollama = os.getenv("RUNNING_OLLAMA")
+ollama_model = os.getenv("OLLAMA_MODEL")
 OLLAMA_API_URL = "http://localhost:11434/api/generate"
 
 images = {}
+app_start_time = int(datetime.utcnow().timestamp())
 
 #-------------------------------------------------------------------
 # chat functions 
 #-------------------------------------------------------------------
 
-def process_message(chat_history, model):
+def process_openai_message(chat_history, model):
     try:
         response = openai.ChatCompletion.create(
             model=model,
-            messages=chat_history  
+            messages=chat_history,
+            stream=True
         )
-        ai_message = {"role": "assistant", "content": response['choices'][0]['message']['content']}
-        return ai_message
+        for message in response:
+            yield message
+            #print(message)#--------------------------------------------------------------------------------
     except OpenAIError as e:
-        return {"error": str(e)}
+        yield {"error": str(e)}
 
 def process_ollama_message(chat_history):
+    prompt = chat_history[-1]["content"]
+
+    response = requests.post(
+        OLLAMA_API_URL,
+        headers={"Authorization": "Bearer YOUR_API_TOKEN"},
+        json={
+            "model": ollama_model,
+            "prompt": prompt
+        },
+        stream=True
+    )
+    
+    for line in response.iter_lines():
+        if line:
+            decoded_line = line.decode('utf-8')
+            json_data = json.loads(decoded_line)
+            #print(json_data) #---------------------------------------------------------------------------------------------
+            generated_text = json_data.get("response", "")
+            done = json_data.get("done", False)
+
+            yield {
+                "choices": [{
+                    "delta": {
+                        "content": generated_text
+                    },
+                    "finish_reason": "stop" if done else None
+                }]
+            }
+
+
+    
+def process_ollama_message_VERY_OLD(chat_history):
     prompt = chat_history[-1]["content"]
     
     response = requests.post(
         OLLAMA_API_URL,
         headers={"Authorization": "Bearer YOUR_API_TOKEN"},
         json={
-            "model": "everythinglm",
+            "model": ollama_model,
             "prompt": prompt
         },
         stream=True
@@ -131,15 +166,21 @@ def favicon():
 def chat():
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     ip_counts[ip] = ip_counts.get(ip, 0) + 1
-    save_ip_counts()  # Save counts to file after updating them
+    save_ip_counts()
 
     user_message = request.json['user_message']
-    model = request.json.get('model', 'gpt-3.5-turbo-16k')  # Retrieve the selected model or use a default model
-    if(model == 'LOCALHOST'):# i used 'LOCALHOST' to denote the use of the local ollama model
-        bot_message = process_ollama_message(user_message) 
-    else:
-        bot_message = process_message(user_message, model)
-    return jsonify({'bot_message': bot_message})
+    model = request.json.get('model', 'gpt-3.5-turbo-16k')
+
+    def generate(user_message, model):
+        if model == 'LOCALHOST':
+            for bot_message_chunk in process_ollama_message(user_message):
+                yield json.dumps({'bot_message': bot_message_chunk})
+        else:
+            for bot_message_chunk in process_openai_message(user_message, model):
+                yield json.dumps({'bot_message': bot_message_chunk})
+
+
+    return Response(generate(user_message,model), content_type='text/event-stream')
 
 @app.route('/')
 def index():
