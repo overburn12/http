@@ -9,14 +9,13 @@ app = Flask(__name__)
 #-------------------------------------------------------------------
 # app variables 
 #-------------------------------------------------------------------
-
 load_dotenv() 
 openai.api_key = os.getenv("MY_API_KEY")
 openai_api_key = os.getenv("MY_API_KEY")
 secret_password = os.getenv("SECRET_PASSWORD")
 running_ollama = os.getenv("RUNNING_OLLAMA")
-ollama_model = os.getenv("OLLAMA_MODEL")
 OLLAMA_API_URL = os.getenv("OLLAMA_API_URL")
+ollama_models = ['everythinglm','llama2','llama2-uncensored','orca-mini','wizardlm-uncensored']
 
 images = {}
 app_start_time = int(datetime.utcnow().timestamp())
@@ -37,14 +36,14 @@ def process_openai_message(chat_history, model):
     except OpenAIError as e:
         yield {"error": str(e)}
 
-def process_ollama_message(chat_history):
+def process_ollama_message(chat_history, model):
     prompt = chat_history[-1]["content"]
 
     response = requests.post(
         OLLAMA_API_URL,
         headers={"Authorization": "Bearer YOUR_API_TOKEN"},
         json={
-            "model": ollama_model,
+            "model": model,
             "prompt": prompt
         },
         stream=True
@@ -66,24 +65,17 @@ def process_ollama_message(chat_history):
                 }]
             }
 
-
 #-------------------------------------------------------------------
 # functions 
 #-------------------------------------------------------------------
 
 def generate_model_list():
-    sorted_models = ['gpt-3.5-turbo-16k','gpt-3.5-turbo','gpt-3.5-turbo-0301','gpt-3.5-turbo-0613','gpt-3.5-turbo-16k-0613','gpt-4']
-    response = ''
+    models = ['gpt-3.5-turbo-16k','gpt-3.5-turbo','gpt-3.5-turbo-0301','gpt-3.5-turbo-0613','gpt-3.5-turbo-16k-0613','gpt-4']
 
     if running_ollama == 'true':
-        sorted_models.append('LOCALHOST')
+        models += ollama_models
 
-    for i, model in enumerate(sorted_models):
-        response += model
-        if i != len(sorted_models) - 1:  # Check if current model is not the last one
-            response += '<br>'
-    return response
-
+    return '<br>'.join(models)
 
 def save_ip_counts():
     with open('data/ip_counts.json', 'w') as f:
@@ -138,13 +130,10 @@ def chat():
     model = request.json.get('model', 'gpt-3.5-turbo-16k')
 
     def generate(user_message, model):
-        if model == 'LOCALHOST':
-            for bot_message_chunk in process_ollama_message(user_message):
-                yield json.dumps({'bot_message': bot_message_chunk})
-        else:
-            for bot_message_chunk in process_openai_message(user_message, model):
-                yield json.dumps({'bot_message': bot_message_chunk})
-
+        processor = process_ollama_message if model in ollama_models else process_openai_message
+        
+        for bot_message_chunk in processor(user_message, model):
+            yield json.dumps({'bot_message': bot_message_chunk})
 
     return Response(generate(user_message,model), content_type='text/event-stream')
 

@@ -140,21 +140,7 @@ function populateChatList() {
   var chatIcon = document.createElement('img');
   chatIcon.src = 'chat-icon.png';
   chatIcon.classList.add('list-icon');
-/*
-  var deleteIcon = document.createElement('img');
-  deleteIcon.src = 'delete-icon.png';
-  deleteIcon.classList.add('list-icon');
-  deleteIcon.onclick = function () {
-    deleteCurrentChat();
-  };
-  
-  var renameIcon = document.createElement('img');
-  renameIcon.src = 'rename-icon.png';
-  renameIcon.classList.add('list-icon');
-  renameIcon.onclick = function () {
-    renameCurrentChat();
-  };
-*/
+
   chatHistories.forEach(function (chat, index) {
     var chatContainer = document.createElement('div');
     var chatTitle = document.createElement('div');
@@ -169,7 +155,6 @@ function populateChatList() {
     ChatsListContainer.appendChild(chatContainer);
   });
  
-  /*init_chat_list();*/
   highlightSelectedChat();
 }
 
@@ -264,17 +249,33 @@ function render_codeblocks(input_message) {
 }
 
 function renderSingleMessage(message) {
-  var roleName = message.role === 'user' ? 'overburn.png' : 'gpt.png';
-  var className = message.role === 'user' ? 'chat-icon' : 'chat-icon';
-  var messageLineClass = message.role === 'user' ? 'user-message-line' : 'bot-message-line';
   var renderedContent = render_codeblocks(message.content);
 
-  return `
-    <div class="${messageLineClass}">
-      <div class="${className}"><img src='${roleName}'></div>
-      <div class="message-content">${renderedContent}</div>
-    </div>
-  `;
+  if (message.role === 'user'){
+    return `
+      <div class="user-message-line">
+        <div class="chat-icon"><img src='overburn.png'></div>
+        <div class="message-content">${renderedContent}</div>
+      </div>
+    `;
+  }else{
+    if(message.model === ''){
+      return `
+      <div class="bot-message-line">
+        <div class="chat-icon"><img src='gpt.png'></div>
+        <div class="message-content">${renderedContent}</div>
+      </div>`;
+    }else{
+      return `
+      <div class="bot-message-line">
+        <div class="bot-model">
+          <div class="chat-icon"><img src='gpt.png'></div>
+          <center>${message.model}</center>
+        </div>
+        <div class="message-content">${renderedContent}</div>
+      </div>`;
+    }
+  }
 }
 
 function clearFileInput() {
@@ -371,9 +372,8 @@ async function generateTitle(chat_history) {
   }
 }
 
-
-let tempBotMessage = { role: 'assistant', content: '' };
 async function sendMessage() {
+  var tempBotMessage = { role: 'assistant', model: '', content: '' };
   var userMessageElement = document.getElementById('user_message');
   var userMessageContent = userMessageElement.value;
   var userMessage = { role: 'user', content: userMessageContent };
@@ -385,13 +385,25 @@ async function sendMessage() {
   document.body.classList.add('loading');
   userMessageElement.classList.add('locked');
 
+  // Create a temporary copy of the chat history
+  const tempChatHistory = Object.assign({}, chatHistories[currentChatIndex]);
+
+  // Modify the temp copy by removing model elements
+  tempChatHistory.messages = tempChatHistory.messages.map(message => {
+    if (message.role === 'assistant') {
+      const { model, ...rest } = message; // Destructure the message object 
+      return rest; // Return the modified message object without the model property
+    }
+    return message;
+  });
+
   try {
     const selectedModel = document.getElementById('chat-model').value;
     
     const response = await fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_message: chatHistories[currentChatIndex].messages, model: selectedModel })
+      body: JSON.stringify({ user_message: tempChatHistory.messages, model: selectedModel })
     });
 
     // Assume the response body is a ReadableStream
@@ -401,9 +413,10 @@ async function sendMessage() {
     let buffer = "";
 
     //add a blank bot response to the end of the chat history, this is where the api stream will be saved
+    tempBotMessage.model = selectedModel;
     chatHistories[currentChatIndex].messages.push(tempBotMessage);
     const lastElement = chatHistories[currentChatIndex].messages.length - 1; //the index of the specific message we are directing the api data to
-    const responseIndex = currentChatIndex; //incase currentChatIndex changes during the api stream
+    const responseIndex = currentChatIndex; //in case currentChatIndex changes during the api stream
 
     renderChatHistory();
 
@@ -425,12 +438,14 @@ async function sendMessage() {
         buffer = buffer.slice(endOfObjectIndex + 2);    
         try {
           const jsonMessage = JSON.parse(objectStr);
+          if (jsonMessage.error) {
+            throw new Error("Bot Response Error");
+          }
           const finishReason = jsonMessage.bot_message.choices[0].finish_reason;
           
           if (finishReason) {
             // This is the last message
             saveChatList(); //save the chat after the bot response is finished
-            tempBotMessage = { role: 'assistant', content: '' };
           } else {
             // Append to the temporary bot message
             const chunk_msg = jsonMessage.bot_message.choices[0].delta.content;

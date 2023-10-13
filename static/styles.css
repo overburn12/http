@@ -151,6 +151,10 @@ a:visited {
   border-radius: 10px;
 }
 
+.bot-model{
+  font-size: 10px;
+}
+
 .message-content {
     overflow-wrap: break-word;
     width: var(--chat-content-width);
