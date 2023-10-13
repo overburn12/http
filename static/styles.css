@@ -155,9 +155,22 @@ a:visited {
   font-size: 10px;
 }
 
+.message-container {
+  position: relative;
+}
+
+.edit-icon {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  cursor: pointer;
+}
+
 .message-content {
     overflow-wrap: break-word;
     width: var(--chat-content-width);
+    margin-right: 20px;
+    min-height: 50px;
 }
 
 .file-content {

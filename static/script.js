@@ -67,8 +67,9 @@ function renderChatHistory() {
   let htmlString = '';
 
   if (currentChatIndex !== null && chatHistories[currentChatIndex].messages) {
-    chatHistories[currentChatIndex].messages.forEach(function (message) {
-      htmlString += renderSingleMessage(message);
+    chatHistories[currentChatIndex].messages.forEach(function (message, messageIndex) {
+      var renderedMessage = renderSingleMessage(message, currentChatIndex, messageIndex);
+      htmlString += renderedMessage;
     });
   }
 
@@ -217,6 +218,40 @@ function loadChat(index) {
   highlightSelectedChat();
 }
 
+function editMessage(editIcon, currentChatIndex, messageIndex) {
+  var messageContainer = editIcon.parentNode;
+  var messageContent = messageContainer.querySelector('.message-content');
+  
+  // Check if messageContent already has a textarea inside (indicating it's in edit mode)
+  if (messageContent.querySelector('textarea')) {
+    // Save the edited text
+    var editedText = messageContent.querySelector('textarea').value;
+    
+    // Update the chat history JSON object with the edited text
+    chatHistories[currentChatIndex].messages[messageIndex].content = editedText;
+    
+    // Re-render the chat history
+    renderChatHistory(currentChatIndex);
+    
+    // Add any necessary additional logic to handle saving the edited text (e.g., sending to server, updating a model, etc.)
+    
+  } else {
+    // Create a textarea element to replace the message content
+    var textarea = document.createElement('textarea');
+    textarea.classList.add('edit-textarea');
+    textarea.value = messageContent.innerHTML;
+    
+    // Style the textarea to take up the entire size of the "message-content" div
+    textarea.style.width = '98%';
+    textarea.style.height = messageContent.offsetHeight + 'px';
+    
+    // Replace the message content with the textarea
+    messageContent.innerHTML = '';
+    messageContent.appendChild(textarea);
+    textarea.focus();
+  }
+}
+
 function render_codeblocks(input_message) {
   var regex = /```([\s\S]*?)```/g;
   var parts = input_message.split(regex);
@@ -248,33 +283,36 @@ function render_codeblocks(input_message) {
   return output_message;
 }
 
-function renderSingleMessage(message) {
+
+function renderSingleMessage(message, currentChatIndex, messageIndex) {
   var renderedContent = render_codeblocks(message.content);
 
   if (message.role === 'user'){
     return `
       <div class="user-message-line">
         <div class="chat-icon"><img src='overburn.png'></div>
-        <div class="message-content">${renderedContent}</div>
+        <div class="message-container">
+          <div class="edit-icon" onclick="editMessage(this, ${currentChatIndex}, ${messageIndex})">
+            <img src="edit.png">
+          </div>
+          <div class="message-content">${renderedContent}</div>
+        </div>
       </div>
     `;
-  }else{
-    if(message.model === ''){
-      return `
-      <div class="bot-message-line">
+  } else {
+    return `
+    <div class="bot-message-line">
+      <div class="bot-model">
         <div class="chat-icon"><img src='gpt.png'></div>
-        <div class="message-content">${renderedContent}</div>
-      </div>`;
-    }else{
-      return `
-      <div class="bot-message-line">
-        <div class="bot-model">
-          <div class="chat-icon"><img src='gpt.png'></div>
-          <center>${message.model}</center>
+        <center>${message.model}</center>
+      </div>
+      <div class="message-container">
+        <div class="edit-icon" onclick="editMessage(this, ${currentChatIndex}, ${messageIndex})">
+          <img src="edit.png">
         </div>
         <div class="message-content">${renderedContent}</div>
-      </div>`;
-    }
+      </div>
+    </div>`;
   }
 }
 
