@@ -65,6 +65,16 @@ def process_ollama_message(chat_history, model):
                 }]
             }
 
+def process_title_message(chat_history, model):
+    try:
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=chat_history  
+        )
+        ai_message = {"role": "assistant", "content": response['choices'][0]['message']['content']}
+        return ai_message
+    except OpenAIError as e:
+        return {"error": str(e)}
 #-------------------------------------------------------------------
 # functions 
 #-------------------------------------------------------------------
@@ -127,6 +137,17 @@ def favicon():
 #-------------------------------------------------------------------
 # page routes
 #-------------------------------------------------------------------
+@app.route('/title', methods=['POST'])
+def get_title():
+    user_message = request.json['user_message']
+    model = request.json.get('model')
+    title_model = 'gpt-3.5-turbo-16k'
+
+    if model in ollama_models:
+        return jsonify({'bot_message': {'role': 'assistant', 'content': 'ollama'}})
+    else:
+        bot_message = process_title_message(user_message, title_model)
+        return jsonify({'bot_message': bot_message})
 
 @app.route('/chat', methods=['POST'])
 def chat():

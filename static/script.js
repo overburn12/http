@@ -404,26 +404,36 @@ function formatFileContentForChat(filename, content) {
 
 async function generateTitle(chat_history) {
   var temp_copy = JSON.parse(JSON.stringify(chat_history));
+
+  // Modify the temp copy by removing model elements
+  temp_copy.messages = chat_history.messages.map(message => {
+    if (message.role === 'assistant') {
+      const { model, ...rest } = message; // Destructure the message object 
+      return rest; // Return the modified message object without the model property
+    }
+    return message;
+  });
+  
   var userMessage = { role: 'user', content: 'generate a 1-3 word phrase for the title of this chat' };
   temp_copy.messages.push(userMessage);
 
   try {
     const selectedModel = document.getElementById('chat-model').value;
-    const summaryResponse = await fetch('/chat', {
+    const summaryResponse = await fetch('/title', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_message: temp_copy.messages, model: selectedModel })
     });
-
-    const summaryData = await summaryResponse.json();
+     const summaryData = await summaryResponse.json();
 
     if (summaryData.bot_message.error) {
       throw new Error(summaryData.bot_message.error);
     }
 
-    const botMessage = { role: 'assistant', content: summaryData.bot_message.content.replace(/["']/g, "") };
-    const spaceCount = (botMessage.match(/ /g) || []).length;
-
+    var botMessage = { role: 'assistant', content: summaryData.bot_message.content.replace(/["\\]/g, "") };
+    console.log('TEST');
+    var spaceCount = (botMessage.content.match(/ /g) || []).length;
+    console.log('SUCCESS');
     if (spaceCount > 4) {
       return "too long :(";
     } else {
@@ -431,7 +441,7 @@ async function generateTitle(chat_history) {
     }
 
   } catch (error) {
-    return "error";
+    return "error :(";
   }
 }
 
@@ -440,6 +450,7 @@ async function sendMessage() {
   var userMessageElement = document.getElementById('user_message');
   var userMessageContent = userMessageElement.value;
   var userMessage = { role: 'user', content: userMessageContent };
+  var isNewChat = chatHistories[currentChatIndex].messages.length === 0;
   
   // Add to existing chat
   chatHistories[currentChatIndex].messages.push(userMessage); 
@@ -536,12 +547,12 @@ async function sendMessage() {
     document.body.classList.remove('loading');
     userMessageElement.classList.remove('locked');
   }
-  /*if (isNewChat) {
+  if (isNewChat) {
     var newTitle = await generateTitle(chatHistories[currentChatIndex]);
-    chatHistories[currentChatIndex].title = newTitle.replace(/&quot;/g, '');
+    chatHistories[currentChatIndex].title = newTitle;
     saveChatList();
     populateChatList();
-  }*/
+  }
 }
 
   
