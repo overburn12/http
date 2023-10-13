@@ -239,7 +239,7 @@ function editMessage(editIcon, currentChatIndex, messageIndex) {
     // Create a textarea element to replace the message content
     var textarea = document.createElement('textarea');
     textarea.classList.add('edit-textarea');
-    textarea.value = messageContent.innerHTML;
+    textarea.value = chatHistories[currentChatIndex].messages[messageIndex].content;//messageContent.innerHTML;
     
     // Style the textarea to take up the entire size of the "message-content" div
     textarea.style.width = '98%';
