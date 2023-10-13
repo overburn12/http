@@ -402,7 +402,7 @@ function formatFileContentForChat(filename, content) {
   `;
 }
 
-async function generateTitle(chat_history) {
+async function generateTitle(chat_history, selectedModel) {
   var temp_copy = JSON.parse(JSON.stringify(chat_history));
 
   // Modify the temp copy by removing model elements
@@ -418,7 +418,6 @@ async function generateTitle(chat_history) {
   temp_copy.messages.push(userMessage);
 
   try {
-    const selectedModel = document.getElementById('chat-model').value;
     const summaryResponse = await fetch('/title', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -451,6 +450,7 @@ async function sendMessage() {
   var userMessageContent = userMessageElement.value;
   var userMessage = { role: 'user', content: userMessageContent };
   var isNewChat = chatHistories[currentChatIndex].messages.length === 0;
+  var selectedModel = document.getElementById('chat-model').value;
   
   // Add to existing chat
   chatHistories[currentChatIndex].messages.push(userMessage); 
@@ -472,7 +472,6 @@ async function sendMessage() {
   });
 
   try {
-    const selectedModel = document.getElementById('chat-model').value;
     
     const response = await fetch('/chat', {
       method: 'POST',
@@ -548,10 +547,11 @@ async function sendMessage() {
     userMessageElement.classList.remove('locked');
   }
   if (isNewChat) {
-    var newTitle = await generateTitle(chatHistories[currentChatIndex]);
+    var newTitle = await generateTitle(chatHistories[currentChatIndex], selectedModel);
     chatHistories[currentChatIndex].title = newTitle;
     saveChatList();
     populateChatList();
+    renderChatHistory();
   }
 }
 
