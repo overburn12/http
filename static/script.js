@@ -60,6 +60,8 @@ function saveChatList(){
 }
 
 function renderChatHistory() {
+  resetChatEdits();
+
   var chat_title = document.getElementById('chat_title');
   chat_title.innerHTML = '<div class="chat-icon"></div><center><h3>' + chatHistories[currentChatIndex].title + '</h3></center>';
 
@@ -75,6 +77,7 @@ function renderChatHistory() {
 
   chatHistoryContainer.innerHTML = htmlString;
   chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
+  
 }
 
 function renameCurrentChat() {
@@ -218,6 +221,18 @@ function loadChat(index) {
   highlightSelectedChat();
 }
 
+function resetChatEdits() {
+  chatHistories.forEach(history => {
+    history.isEditing = false;
+    history.editIndex = -1;
+  });
+}
+
+function cancelEdit(event) {
+  event.stopPropagation();
+  renderChatHistory(currentChatIndex);
+}
+
 function editMessage(editIcon, currentChatIndex, messageIndex) {
   var messageContainer = editIcon.parentNode;
   var messageContent = messageContainer.querySelector('.message-content');
@@ -229,26 +244,37 @@ function editMessage(editIcon, currentChatIndex, messageIndex) {
     
     // Update the chat history JSON object with the edited text
     chatHistories[currentChatIndex].messages[messageIndex].content = editedText;
+    chatHistories[currentChatIndex].isEditing = false;
     
-    // Re-render the chat history
+    // save then re-render the chat history
+    saveChatList();
     renderChatHistory(currentChatIndex);
-    
-    // Add any necessary additional logic to handle saving the edited text (e.g., sending to server, updating a model, etc.)
-    
+     
   } else {
-    // Create a textarea element to replace the message content
-    var textarea = document.createElement('textarea');
-    textarea.classList.add('edit-textarea');
-    textarea.value = chatHistories[currentChatIndex].messages[messageIndex].content;//messageContent.innerHTML;
-    
-    // Style the textarea to take up the entire size of the "message-content" div
-    textarea.style.width = '98%';
-    textarea.style.height = messageContent.offsetHeight + 'px';
-    
-    // Replace the message content with the textarea
-    messageContent.innerHTML = '';
-    messageContent.appendChild(textarea);
-    textarea.focus();
+    var switchEditing = false;
+    chatHistories.forEach(history => {
+      if(history.isEditing && (messageIndex != history.editIndex)){
+        switchEditing = true;
+      }
+    });
+
+    if(!switchEditing){ 
+      // Create a textarea element to replace the message content
+      var textarea = document.createElement('textarea');
+      textarea.classList.add('edit-textarea');
+      textarea.value = chatHistories[currentChatIndex].messages[messageIndex].content;
+      
+      // Style the textarea to take up the entire size of the "message-content" div
+      textarea.style.width = '98%';
+      textarea.style.height = messageContent.offsetHeight + 'px';
+      
+      // Replace the message content with the textarea
+      messageContent.innerHTML = `<div class="cancel-icon" onclick="cancelEdit(event)"><img src="cancel.png"></div>`;
+      messageContent.appendChild(textarea);
+      textarea.focus();
+      chatHistories[currentChatIndex].isEditing = true;
+      chatHistories[currentChatIndex].editIndex = messageIndex;
+    }
   }
 }
 
@@ -282,7 +308,6 @@ function render_codeblocks(input_message) {
 
   return output_message;
 }
-
 
 function renderSingleMessage(message, currentChatIndex, messageIndex) {
   var renderedContent = render_codeblocks(message.content);

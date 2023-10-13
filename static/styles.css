@@ -165,6 +165,12 @@ a:visited {
   right: 5px;
   cursor: pointer;
 }
+.cancel-icon {
+  position: absolute;
+  top: 30px;
+  right: 5px;
+  cursor: pointer;
+}
 
 .message-content {
     overflow-wrap: break-word;
