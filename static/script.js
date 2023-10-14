@@ -517,7 +517,6 @@ async function sendMessage() {
           const finishReason = jsonMessage.bot_message.choices[0].finish_reason;
           
           if (finishReason) {
-            // This is the last message
             saveChatList(); //save the chat after the bot response is finished
           } else {
             // Append to the temporary bot message
