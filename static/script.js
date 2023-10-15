@@ -313,10 +313,10 @@ function renderSingleMessage(message, currentChatIndex, messageIndex) {
   return `
   <div class="${isUser ? 'user' : 'bot'}-message-line">
       ${isUser ? '' : '<div class="bot-model">'}
-      <div class="chat-icon">
+        <div class="chat-icon">
           <img src='${isUser ? 'overburn' : 'gpt'}.png'>
-          </div>
-          ${isUser ? '' : `<center>${message.model}</center>`}
+        </div>
+        ${isUser ? '' : `<center>${message.model}</center>`}
       ${isUser ? '' : '</div>'}
       <div class="message-container">
           <div class="edit-icon" onclick="editMessage(this, ${currentChatIndex},${messageIndex})">
@@ -325,38 +325,6 @@ function renderSingleMessage(message, currentChatIndex, messageIndex) {
           <div class="message-content">${renderedContent}</div>
       </div>
   </div>`;
-}
-
-function renderSingleMessage_OLD(message, currentChatIndex, messageIndex) {
-  var renderedContent = render_codeblocks(message.content);
-
-  if (message.role === 'user'){
-    return `
-      <div class="user-message-line">
-        <div class="chat-icon"><img src='overburn.png'></div>
-        <div class="message-container">
-          <div class="edit-icon" onclick="editMessage(this, ${currentChatIndex}, ${messageIndex})">
-            <img src="edit.png">
-          </div>
-          <div class="message-content">${renderedContent}</div>
-        </div>
-      </div>
-    `;
-  } else {
-    return `
-    <div class="bot-message-line">
-      <div class="bot-model">
-        <div class="chat-icon"><img src='gpt.png'></div>
-        <center>${message.model}</center>
-      </div>
-      <div class="message-container">
-        <div class="edit-icon" onclick="editMessage(this, ${currentChatIndex}, ${messageIndex})">
-          <img src="edit.png">
-        </div>
-        <div class="message-content">${renderedContent}</div>
-      </div>
-    </div>`;
-  }
 }
 
 function clearFileInput() {
