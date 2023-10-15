@@ -308,6 +308,27 @@ function render_codeblocks(input_message) {
 
 function renderSingleMessage(message, currentChatIndex, messageIndex) {
   var renderedContent = render_codeblocks(message.content);
+  var isUser = message.role === 'user';
+
+  return `
+  <div class="${isUser ? 'user' : 'bot'}-message-line">
+      ${isUser ? '' : '<div class="bot-model">'}
+      <div class="chat-icon">
+          <img src='${isUser ? 'overburn' : 'gpt'}.png'>
+          </div>
+          ${isUser ? '' : `<center>${message.model}</center>`}
+      ${isUser ? '' : '</div>'}
+      <div class="message-container">
+          <div class="edit-icon" onclick="editMessage(this, ${currentChatIndex},${messageIndex})">
+              <img src="edit.png">
+          </div>
+          <div class="message-content">${renderedContent}</div>
+      </div>
+  </div>`;
+}
+
+function renderSingleMessage_OLD(message, currentChatIndex, messageIndex) {
+  var renderedContent = render_codeblocks(message.content);
 
   if (message.role === 'user'){
     return `

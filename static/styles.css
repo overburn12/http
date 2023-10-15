@@ -127,7 +127,7 @@ a:visited {
     width: 100%;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: top;
     padding: 20px;
     border-color: #000000;
 }
@@ -153,6 +153,8 @@ a:visited {
 
 .bot-model{
   font-size: 10px;
+  vertical-align: top;
+  height: 100%;
 }
 
 .message-container {
