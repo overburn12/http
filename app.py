@@ -160,8 +160,7 @@ def serve_image(image_name):
         '.jpeg': 'image/jpeg',
         '.ico': 'image/x-icon',
         '.gif': 'image/gif',
-    }
-    
+    }  
     mime_type = mime_map.get(extension.lower())
     image_file = images.get(f'{name}{extension}')
     
@@ -214,14 +213,11 @@ def image_gallery():
     html_content = '<!DOCTYPE html><html><body><center>'
     
     for filename in images.keys():
-        # Extract the name and extension of the file
-        name, extension = os.path.splitext(filename)
-        
+        name, extension = os.path.splitext(filename)  
         html_content += f'<figure><img src="/{name}{extension}" alt="{filename}">'
         html_content += f'<figcaption>{filename}</figcaption></figure>'
-        
+
     html_content += '</center></body></html>'
-    
     return html_content
 
 #-------------------------------------------------------------------

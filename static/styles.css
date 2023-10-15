@@ -165,11 +165,48 @@ a:visited {
   right: 5px;
   cursor: pointer;
 }
+.edit-icon::before {
+  font-size: 10px;
+  content: 'Edit'; /* caption text */
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px;
+  background-color: #000;
+  color: #fff;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.edit-icon:hover::before {
+  opacity: 1; /* show the tooltip on hover */
+  left: calc(50% + 60px); /* move tooltip to the right by 30px */
+}
+
 .cancel-icon {
   position: absolute;
   top: 30px;
   right: 5px;
   cursor: pointer;
+}
+.cancel-icon::before {
+  font-size: 10px;
+  content: 'Cancel'; /* caption text */
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px;
+  background-color: #000;
+  color: #fff;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.cancel-icon:hover::before {
+  opacity: 1; /* show the tooltip on hover */
+  left: calc(50% + 60px); /* move tooltip to the right by 30px */
 }
 
 .message-content {
@@ -203,25 +240,39 @@ a:visited {
   overflow-x: auto;
 }
 
-pre code {
+.codeblock-container {
   display: block;
-  background-color: var(--code-block-color);
   border: 0px;
   border-radius: 10px;
   padding: 0px;
+  margin: 20px;
+  margin-right: 30px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+pre {
+  margin: 0px;
+  display: block;
+  border: 0px;
+  padding: 0px;
+}
+
+code {
+  margin: 0px;
+  display: block;
+  background-color: var(--code-block-color);
+  border: 0px;
+  padding: 5px;
   font-family: monospace;
   font-size: 14px;
   overflow-x: auto;
   color: #ffffff;
-  margin: 20px;
-  margin-right: 30px;
 }
 
-.code{
-  padding: 10px;
-}
-
-pre code div.codeblock-title {
+.codeblock-title {
   background-color: var(--code-title-color);
   padding: 5px;
   font-weight: bold;
@@ -237,7 +288,6 @@ pre code div.codeblock-title {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
 
 .highlighted-chat {
     background-color: var(--chat-user-color);

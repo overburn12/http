@@ -77,7 +77,8 @@ function renderChatHistory() {
 
   chatHistoryContainer.innerHTML = htmlString;
   chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
-  
+
+  Prism.highlightAll();
 }
 
 function renameCurrentChat() {
@@ -281,25 +282,21 @@ function editMessage(editIcon, currentChatIndex, messageIndex) {
 function render_codeblocks(input_message) {
   var regex = /```([\s\S]*?)```/g;
   var parts = input_message.split(regex);
-
+  
   var output_message = parts.map(function (part, index) {
     if (index % 2 === 1) {
       // Split the code into title and content
       var codeParts = part.split('\n');
       var title = codeParts[0].trim();
       var content = codeParts.slice(1).join('\n').trim();
-
-      // Escape the content inside the code blocks
       var escapedCode = escapeHtml(content);
-
-      // Create the title and code blocks with appropriate styling
-      return '<pre><code><div class="codeblock-title">' + title + '</div><div class="code">' + escapedCode + '</div></code></pre>';
+      var languageClass = "language-" + title.toLowerCase();
+      
+      return `<div class="codeblock-container"><div class="codeblock-title">` + title + `</div><pre><code class="` + languageClass + `"><p>` + escapedCode + `</p></code></pre></div>`;
     } else {
       if (part.trim().startsWith('<div class="file-content">')) {
-        // Return the original content without escaping, file content has already been escaped when it was attached
         return part;
       } else {
-        // Escape the other content
         var escapedCode = escapeHtml(part);
         return escapedCode.replace(/\n/g, '<br>');
       }
@@ -434,6 +431,7 @@ async function generateTitle(chat_history, selectedModel) {
     var spaceCount = (botMessage.content.match(/ /g) || []).length;
     console.log('SUCCESS');
     if (spaceCount > 4) {
+      console.log(botMessage); //---------------------------------------------------------debugging line---------------------------------------------------
       return "too long :(";
     } else {
       return botMessage.content;
