@@ -14,7 +14,7 @@ load_dotenv()
 openai.api_key = os.getenv('MY_API_KEY')
 openai_api_key = os.getenv('MY_API_KEY')
 secret_password = os.getenv('SECRET_PASSWORD')
-running_ollama = os.getenv('RUNNING_OLLAMA')
+running_ollama = os.getenv('RUNNING_OLLAMA').lower()
 ollama_api_url = os.getenv('OLLAMA_API_URL')
 ollama_models = [
         'everythinglm',
@@ -200,7 +200,7 @@ def chat():
 
 @app.route('/models', methods=['GET'])
 def return_models():
-    if running_ollama:
+    if running_ollama == 'true':
         return '<br>'.join(openai_models + ollama_models)
     return '<br>'.join(openai_models)
 
