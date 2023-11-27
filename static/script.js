@@ -331,18 +331,40 @@ function clearFileInput() {
   document.getElementById('codeFiles').value = '';
 }
 
+function escapeHtml(text) {
+  var map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+      '`': '&#96;'
+  };
+  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
 function handleFiles() {
   const files = document.getElementById('codeFiles').files;
   if (files.length === 0) {
       alert('Please select files to upload.');
       return;
   }
-  // Iterate over each file, read its content, and append it as a user message to chat history
+  // Iterate over each file, validate its size, read its content, and append it as a user message to chat history
   Array.from(files).forEach(async (file) => {
+      const fileSize = file.size;
+      const fileSizeInKB = fileSize / 1024; // convert to KB
+      
+      if (fileSizeInKB > 20) { // limit file size to 20KB
+        alert('File size exceeds the limit (20KB).');
+        clearFileInput();
+        return;
+      }
+      
       const content = await readFileContent(file);
       const formattedContent = formatFileContentForChat(file.name, content);
       const userMessage = { role: 'user', content: formattedContent };
       chatHistories[currentChatIndex].messages.push(userMessage);
+      saveChatList();
       renderChatHistory();
   });
   // Feedback for successful upload
@@ -360,18 +382,6 @@ function readFileContent(file) {
       reader.onerror = (error) => reject(error);
       reader.readAsText(file);
   });
-}
-
-function escapeHtml(text) {
-  var map = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;',
-      '`': '&#96;'
-  };
-  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
 
 function formatFileContentForChat(filename, content) {
@@ -416,11 +426,8 @@ async function generateTitle(chat_history, selectedModel) {
     }
 
     var botMessage = { role: 'assistant', content: summaryData.bot_message.content.replace(/["\\]/g, "") };
-    console.log('TEST');
     var spaceCount = (botMessage.content.match(/ /g) || []).length;
-    console.log('SUCCESS');
     if (spaceCount > 4) {
-      console.log(botMessage); //---------------------------------------------------------debugging line---------------------------------------------------
       return "too long :(";
     } else {
       return botMessage.content;

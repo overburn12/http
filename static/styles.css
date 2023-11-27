@@ -69,11 +69,11 @@
   padding: 20px;
   background-color: var(--chat-list-color);
 }
+
 #list_container{
   overflow-y: auto;
   max-height: 600px;
 }
-
 
 #list_head {
   display: flex;
@@ -85,10 +85,6 @@
 
 #list_end {
   height: 150px;
-}
-
-#reset_button {
-  margin-top: 20px;
 }
 
 #user_message.locked {
@@ -104,6 +100,7 @@ body {
   margin: 0px;
   padding: 0px;
 }
+
 body.loading {
   cursor: progress;
 }
@@ -112,6 +109,7 @@ a {
   color: #ffffff; /* Desired link color */
   text-decoration: none; /* Remove underline */
 }
+
 a:visited {
   color: #ffffff; /* Desired link color for visited links */
 }
@@ -165,48 +163,12 @@ a:visited {
   right: 5px;
   cursor: pointer;
 }
-.edit-icon::before {
-  font-size: 10px;
-  content: 'Edit'; /* caption text */
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 2px;
-  background-color: #000;
-  color: #fff;
-  border-radius: 3px;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.edit-icon:hover::before {
-  opacity: 1; /* show the tooltip on hover */
-  left: calc(50% + 60px); /* move tooltip to the right by 30px */
-}
 
 .cancel-icon {
   position: absolute;
   top: 30px;
   right: 5px;
   cursor: pointer;
-}
-.cancel-icon::before {
-  font-size: 10px;
-  content: 'Cancel'; /* caption text */
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 2px;
-  background-color: #000;
-  color: #fff;
-  border-radius: 3px;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.cancel-icon:hover::before {
-  opacity: 1; /* show the tooltip on hover */
-  left: calc(50% + 60px); /* move tooltip to the right by 30px */
 }
 
 .message-content {
