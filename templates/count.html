@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overburn.org - Counts</title>
+{% block title %} Overburn.org - Counts {% endblock %}
+
+{% block head %}
     <style>
         a {
             color: white;
@@ -41,9 +39,9 @@
             background-color: #030303;
         }
     </style>
-</head>
+{% endblock %}
 
-<body>
+{% block body %}
     <a href="{{ url_for('index') }}">index.html</a><br>
     <table id="chatsTable">
         <thead>
@@ -56,7 +54,9 @@
             <!-- Data will be populated here using JavaScript -->
         </tbody>
     </table>
+{% endblock %}
 
+{% block scripts %}
     <script>
         async function fetchAndDisplayCounts() {
             const chatsTableBody = document.getElementById('chatsTableBody');
@@ -86,6 +86,4 @@
 
         fetchAndDisplayCounts();
     </script>
-</body>
-
-</html>
+{% endblock %}

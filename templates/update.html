@@ -1,7 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Overburn.org - Update</title>
+{% extends "base.html" %}
+
+{% block title %}Overburn.org - Update{% endblock %}
+
+{% block head %}
     <style>
         a {
             color: white;
@@ -31,8 +32,11 @@
             text-align: left;
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+
+{% block body %}
+
     <a href="{{ url_for('index') }}">index.html</a><br>
     <center>
         <h1>Update Server</h1>
@@ -47,6 +51,9 @@
         <pre><code>{{ log_content }}</code></pre>
         Server birthdate: 9/9/2023
     </center>
+{% endblock %}
+
+{% block scripts %}
     <script>
         function savePassword(event) {
             event.preventDefault(); // Prevent form submission
@@ -89,5 +96,4 @@
         calculateUptime();
         setInterval(calculateUptime, 1000); // Update uptime every second
     </script>
-</body>
-</html>
+{% endblock %}

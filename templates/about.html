@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overburn.org - About</title>
+{% block title %}Overburn.org - About{% endblock %}
 
+{% block head %}
     <style>
         a {
             color: white;
@@ -47,9 +44,9 @@
             font-family: Consolas, monospace;
         }
     </style>
-</head>
+{% endblock %}
 
-<body>
+{% block body %}
     <a href="{{ url_for('index') }}">index.html</a><br>
     <div class="about-page">
         <h1>About Overburn's Chatbot</h1>
@@ -89,6 +86,4 @@
         <h2>About Overburn:</h2>
         <p>Overburn is an enthusiastic individual passionate about STEM topics. This chatbot is a testament to his commitment to continuous learning and applying coding concepts. Beyond tech, Overburn is an avid cyclist, camper, and hiker.</p>
     </div>
-</body>
-
-</html>
+{% endblock %}
