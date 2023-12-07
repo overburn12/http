@@ -59,10 +59,7 @@ openai_models = [
         'gpt-4-0613',
         'gpt-4-1106-preview']
 
-default_model = 'gpt-3.5-turbo-16k'
-images = {}
 app_start_time = int(datetime.utcnow().timestamp())
-
 db = SQLAlchemy(app)
 
 class PageHit(db.Model):
@@ -81,33 +78,6 @@ def admin_required(f):
             flash('You need to be logged in to view this page.')
             return redirect(url_for('admin_login'))
     return decorated_function
-
-#-------------------------------------------------------------------
-# page count
-#-------------------------------------------------------------------
-
-@app.before_request
-def before_request():
-    page = request.path
-    hit_type = 'none'
-    visitor_id = request.headers.get('X-Forwarded-For', request.remote_addr)
-    ignore_list = ['thumbnail', 'icons']
-
-    for item in ignore_list:
-        if item in page:
-            return
-    try:
-        app.url_map.bind('').match(page)
-        if page.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
-            hit_type = 'image'
-        else:
-            hit_type = 'valid'
-    except (NotFound, RequestRedirect):
-        hit_type = 'invalid'
-    finally:
-        new_hit = PageHit(page_url=page, hit_type=hit_type, visitor_id=visitor_id)
-        db.session.add(new_hit)
-        db.session.commit()
 
 
 #-------------------------------------------------------------------
@@ -167,31 +137,32 @@ def process_title_message(chat_history, model):
         return {'error': str(e)}
 
 #-------------------------------------------------------------------
-# functions 
+# page count
 #-------------------------------------------------------------------
 
-def save_ip_counts():
-    with open('data/ip_counts.json', 'w') as f:
-        json.dump(ip_counts, f)
+@app.before_request
+def before_request():
+    page = request.path
+    hit_type = 'none'
+    visitor_id = request.headers.get('X-Forwarded-For', request.remote_addr)
+    ignore_list = ['thumbnail', 'icons']
 
-def load_ip_counts():
+    for item in ignore_list:
+        if item in page:
+            return
     try:
-        with open('data/ip_counts.json', 'r') as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}
-
-ip_counts = load_ip_counts()
-
-def load_images_to_memory():
-    image_folder = 'img/'
-    image_filenames = os.listdir(image_folder)
-    
-    for filename in image_filenames:
-        with app.open_resource(os.path.join(image_folder, filename), 'rb') as f:
-            images[filename] = f.read()
-
-load_images_to_memory()
+        app.url_map.bind('').match(page)
+        if page.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+            hit_type = 'image'
+        else:
+            hit_type = 'valid'
+    except (NotFound, RequestRedirect):
+        hit_type = 'invalid'
+    finally:
+        new_hit = PageHit(page_url=page, hit_type=hit_type, visitor_id=visitor_id)
+        print(f"Page: {page}, Hit Type: {hit_type}, Visitor ID: {visitor_id}, endpoint: {request.endpoint}")
+        db.session.add(new_hit)
+        db.session.commit()
 
 #-------------------------------------------------------------------
 # page routes
@@ -201,15 +172,11 @@ load_images_to_memory()
 def index():
     return render_template('index.html')
 
-@app.route('/view_count', methods=['GET'])
-def view_count_page():
-    return render_template('count.html')
-
 @app.route('/count', methods=['GET', 'POST'])
 def count_page():
 
     # Query and tally the valid page hits
-    exclude_words = ['admin', '404', 'thumbnail', 'icon', 'logout']
+    exclude_words = ['exclude-nothing']
     valid_hits = db.session.query(
         PageHit.page_url,
         func.count(PageHit.id)
@@ -308,23 +275,13 @@ def logout():
 # api routes
 #-------------------------------------------------------------------
 
-@app.route('/<path:image_name>')
+@app.route('/img/<path:image_name>')
 def serve_image(image_name):
-    name, extension = os.path.splitext(image_name)
-    mime_map = {
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.ico': 'image/x-icon',
-        '.gif': 'image/gif',
-    }  
-    mime_type = mime_map.get(extension.lower())
-    image_file = images.get(f'{name}{extension}')
-    
-    if image_file and mime_type:
-        return Response(image_file, content_type=mime_type)
-    else:
-        abort(404)  # Return a 404 error if the image or MIME type is not found
+    image_dir = 'img/'
+    try:
+        return send_from_directory(image_dir, image_name)
+    except FileNotFoundError:
+        abort(404)
 
 @app.route('/title', methods=['POST'])
 def get_title():
@@ -341,8 +298,6 @@ def get_title():
 @app.route('/chat', methods=['POST'])
 def chat():
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    ip_counts[ip] = ip_counts.get(ip, 0) + 1
-    save_ip_counts()
 
     user_message = request.json['user_message']
     model = request.json.get('model', 'gpt-3.5-turbo-16k')
@@ -361,10 +316,6 @@ def return_models():
     if running_ollama == 'true':
         models.extend(ollama_models)
     return json.dumps(models)
-
-@app.route('/count', methods=['GET'])
-def count_connections():
-    return jsonify(ip_counts)
 
 #-------------------------------------------------------------------
 # Error handlers

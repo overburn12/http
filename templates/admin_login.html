@@ -42,6 +42,8 @@
 {% endblock %}
 
 {% block content %}
+    <div id="the_page_inner">
+
     {{ block_header('Log in')}}
     <div class="login-container">
         {% with messages = get_flashed_messages() %}
@@ -66,4 +68,5 @@
         </form>
     </div>
     {{ block_footer() }}
-    {% endblock %}
+</div>
+{% endblock %}

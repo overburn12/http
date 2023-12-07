@@ -20,19 +20,10 @@ window.addEventListener('load', function () {
 
 document.getElementById("menu_icon").addEventListener("click", function() {
   var hiddenElement = document.getElementById("chats_list");
-  if (hiddenElement.style.display === "block") {
-    hiddenElement.style.display = "none";
-  } else {
+  if (hiddenElement.style.display === "none") {
     hiddenElement.style.display = "block";
-  }
-});
-
-document.getElementById("menu_icon2").addEventListener("click", function() {
-  var hiddenElement = document.getElementById("menu_list");
-  if (hiddenElement.style.display === "block") {
-    hiddenElement.style.display = "none";
   } else {
-    hiddenElement.style.display = "block";
+    hiddenElement.style.display = "none";
   }
 });
 
@@ -159,7 +150,7 @@ function populateChatList() {
   ChatsListContainer.innerHTML = '';
 
   var chatIcon = document.createElement('img');
-  chatIcon.src = 'chat-icon.png';
+  chatIcon.src = '/img/chat-icon.png';
   chatIcon.classList.add('list-icon');
 
   chatHistories.forEach(function (chat, index) {
@@ -279,7 +270,7 @@ function editMessage(editIcon, currentChatIndex, messageIndex) {
       textarea.style.height = messageContent.offsetHeight + 'px';
       
       // Replace the message content with the textarea
-      messageContent.innerHTML = `<div class="cancel-icon" onclick="cancelEdit(event)"><img src="cancel.png"></div>`;
+      messageContent.innerHTML = `<div class="cancel-icon" onclick="cancelEdit(event)"><img src="/img/cancel.png"></div>`;
       messageContent.appendChild(textarea);
       textarea.focus();
       chatHistories[currentChatIndex].isEditing = true;
@@ -323,13 +314,13 @@ function renderSingleMessage(message, currentChatIndex, messageIndex) {
   <div class="${isUser ? 'user' : 'bot'}-message-line">
       ${isUser ? '' : '<div class="bot-model">'}
         <div class="chat-icon">
-          <img src='${isUser ? 'overburn' : 'gpt'}.png'>
+          <img src='/img/${isUser ? 'overburn' : 'gpt'}.png'>
         </div>
         ${isUser ? '' : `<center>${message.model}</center>`}
       ${isUser ? '' : '</div>'}
       <div class="message-container">
           <div class="edit-icon" onclick="editMessage(this, ${currentChatIndex},${messageIndex})">
-              <img src="edit.png">
+              <img src="/img/edit.png">
           </div>
           <div class="message-content">${renderedContent}</div>
       </div>

@@ -31,53 +31,57 @@
 {% endblock %}
 
 {% block content %}
+<div id="the_page_inner">
+
     <div class = 'element-block'>
         <p>{{total_unique}} total unique visitors</p>
     </div>
-
+    
     {{ block_header('Page Hits')}}
-        <table class="hits_table">
-            <tr>
-                <th>Page</th>
-                <th>Hits</th>
-            </tr>
-            {% for page, hits in page_hits %}
-            <tr>
-                <td>{{ page }}</td>
-                <td>{{ hits }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    {{ block_footer() }}
-
-    {{ block_header('Image Hits')}}
-        <table class="hits_table">
-            <tr>
-                <th>Image Page</th>
-                <th>Hits</th>
-            </tr>
-            {% for page, hits in page_hits_images %}
-            <tr>
-                <td><a href="{{ page }}">{{ page }}</a></td>
-                <td>{{ hits }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    {{ block_footer() }}
-
-    {{ block_header('Invalid hits')}}
-        <table class="hits_table">
-            <tr>
-                <th>Page</th>
-                <th>Hits</th>
-            </tr>
-            {% for page, hits in page_hits_invalid %}
-            <tr>
-                <td>{{ page }}</td>
-                <td>{{ hits }}</td>
-            </tr>
-            {% endfor %}
-        </table>
+    <table class="hits_table">
+        <tr>
+            <th>Page</th>
+            <th>Hits</th>
+        </tr>
+        {% for page, hits in page_hits %}
+        <tr>
+            <td>{{ page }}</td>
+            <td>{{ hits }}</td>
+        </tr>
+        {% endfor %}
+    </table>
     {{ block_footer() }}
     
-{% endblock %}
+    {{ block_header('Image Hits')}}
+    <table class="hits_table">
+        <tr>
+            <th>Image Page</th>
+            <th>Hits</th>
+        </tr>
+        {% for page, hits in page_hits_images %}
+        <tr>
+            <td><a href="{{ page }}">{{ page }}</a></td>
+            <td>{{ hits }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {{ block_footer() }}
+    
+    {{ block_header('Invalid hits')}}
+    <table class="hits_table">
+        <tr>
+            <th>Page</th>
+            <th>Hits</th>
+        </tr>
+        {% for page, hits in page_hits_invalid %}
+        <tr>
+            <td>{{ page }}</td>
+            <td>{{ hits }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {{ block_footer() }}
+    
+</div>
+    {% endblock %}
+    

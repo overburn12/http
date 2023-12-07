@@ -39,26 +39,26 @@
 {% endblock %}
 
 {% block content %}
-{{ block_header('Admin Dashboard')}}
-<center>
-    <p id="uptime"></p>
-    <div id="admin-links">
-        &bull; <a href="/admin/count">Daily Page Hits</a><br>
-        ----------------------------<br>
-        &bull; <a href="/admin/reset"> Reset Database :(</a><br>
-        ----------------------------<br>
-        &bull; <a href="/admin/update">Update Server</a><br>
-        ----------------------------<br>
-        &bull; <a href="/logout">Logout</a><br>
-    </div>
-</center>
-{{ block_footer()}}
-
-{{ block_header('Log')}} 
+<div id="the_page_inner">
+    {{ block_header('Admin Dashboard')}}
+        <p id="uptime"></p>
+        <div id="admin-links">
+            &bull; <a href="/admin/count">Daily Page Hits</a><br>
+            ----------------------------<br>
+            &bull; <a href="/admin/reset"> Reset Database :(</a><br>
+            ----------------------------<br>
+            &bull; <a href="/admin/update">Update Server</a><br>
+            ----------------------------<br>
+            &bull; <a href="/logout">Logout</a><br>
+        </div>
+    {{ block_footer()}}
+    
+    {{ block_header('Log')}} 
     <pre><div class="pre-scroll"><code> {{ log_content }} </code></div></pre>
     <p>Server birthdate: 11/3/2023</p>
-{{ block_footer() }}
-
+    {{ block_footer() }}
+</div>
+    
 <script>
 function calculateUptime() {
     var startTime = new Date('{{ app_start_time }}' * 1000);

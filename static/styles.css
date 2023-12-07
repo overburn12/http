@@ -27,12 +27,6 @@
   align-items: center;
 }
 
-#chat_history {
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-
 #chat_bottom{
   display:flex;
   padding: 20px;
@@ -74,27 +68,27 @@
   padding-bottom: 40px;
 }
 
+#the_page_inner{
+  display:flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
 #message_entry{
   display: flex;
 }
 
-#chats_list, #menu_list {
+#chats_list {
   position: fixed;
-  display: none;
+  display: block;
   top: 70px;
   bottom: 0;
+  left: 0;
   width: var(--chat-list-width);
   padding: 20px;
   background-color: var(--chat-list-color);
   z-index: 9000;
-}
-
-#chats_list{
-  left: 0;
-}
-
-#menu_list {
-  right: 0;
 }
 
 #list_container{
@@ -107,17 +101,24 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  margin-bottom: 20px;
 }
 
-#list_end {
-  height: 150px;
+#list_head, #list_end, #menu_list{
+  margin-bottom: 10px;
+  margin-top: 10px;
+  border-radius: 10px;
+  background-color: var(--chat-bot-color);
+  padding: 10px;
 }
 
-#menu_icon, #menu_icon2{
-  width: 40px;
+#list_end{
+  height: 55px;
+}
+
+#menu_icon{
+  width: var(--chat-list-width);
   height: 40px;
-  margin: 10px;
+
   background-color: var(--chat-user-color);
   border-radius: 10px;
 }
@@ -165,8 +166,6 @@ a:visited {
   align-items: center;     /* Centers items vertically */
   width: 100%;             /* Ensures it fills the width */
 }
-
-
 
 .list-icon {
   vertical-align: middle;
