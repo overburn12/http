@@ -78,11 +78,10 @@
   display: flex;
 }
 
-#chats_list {
+#chats_list, #menu_list {
   position: fixed;
-  display:none;
+  display: none;
   top: 70px;
-  left: 0;
   bottom: 0;
   width: var(--chat-list-width);
   padding: 20px;
@@ -90,16 +89,12 @@
   z-index: 9000;
 }
 
+#chats_list{
+  left: 0;
+}
+
 #menu_list {
-  position: fixed;
-  display: none;
-  top: 70px;
   right: 0;
-  bottom: 0;
-  width: var(--chat-list-width);
-  padding: 20px;
-  background-color: var(--chat-list-color);
-  z-index: 9000;
 }
 
 #list_container{

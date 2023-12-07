@@ -287,11 +287,22 @@ def update_server():
     subprocess.run('python3 updater.py', shell=True)
     return '<html>Updated!</html>'
 
+# Example endpoint to call the reset_database function
+@app.route("/admin/reset", methods=['GET'])
+@admin_required
+def reset():
+    # Drop all tables
+    db.reflect()
+    db.drop_all()
+
+    # Recreate the tables
+    db.create_all()
+    return redirect(url_for('admin_dashboard'))
+
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
     return redirect(url_for('admin_login'))
-
 
 #-------------------------------------------------------------------
 # api routes
