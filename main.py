@@ -79,7 +79,6 @@ def admin_required(f):
             return redirect(url_for('admin_login'))
     return decorated_function
 
-
 #-------------------------------------------------------------------
 # chat functions 
 #-------------------------------------------------------------------
@@ -282,7 +281,7 @@ def serve_image(image_name):
     except FileNotFoundError:
         abort(404)
 
-@app.route('/title', methods=['POST'])
+@app.route('/title', methods=['POST','GET'])
 def get_title():
     user_message = request.json['user_message']
     model = request.json.get('model')
@@ -294,7 +293,7 @@ def get_title():
         bot_message = process_title_message(user_message, title_model)
         return jsonify({'bot_message': bot_message})
 
-@app.route('/chat', methods=['POST'])
+@app.route('/chat', methods=['POST','GET'])
 def chat():
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
 
