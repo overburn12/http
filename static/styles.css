@@ -9,6 +9,7 @@
 }
 
 #chat_title{
+  position: fixed;
   background-color: var(--chat-list-color);
   width: 100%;
   height: 30px;
@@ -18,6 +19,14 @@
   padding: 20px;
 }
 
+#chat_title_inner{
+  width: 90%;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 #chat_history {
   justify-content: center;
   align-items: center;
@@ -25,6 +34,7 @@
 }
 
 #chat_bottom{
+  display:flex;
   padding: 20px;
   background-color: var(--chat-user-color);
   width: 100%;
@@ -35,7 +45,7 @@
 #chat_input_container {
   width: var(--chat-content-width);
   display: block;
-  margin-left: 104px;
+  margin-left: 90px;
 }
 
 #user_message {
@@ -49,11 +59,19 @@
 }
 
 #the_page{
+  position: fixed;
+  bottom:0px;
+  left: 0px;
+  right: 0px;
+  top:70px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
   margin: 0px;
-  margin-left: var(--chat-list-width);
   justify-content: center;
   align-items: center;
   padding: 0px;
+  padding-bottom: 40px;
 }
 
 #message_entry{
@@ -62,12 +80,26 @@
 
 #chats_list {
   position: fixed;
-  top: 0;
+  display:none;
+  top: 70px;
   left: 0;
   bottom: 0;
   width: var(--chat-list-width);
   padding: 20px;
   background-color: var(--chat-list-color);
+  z-index: 9000;
+}
+
+#menu_list {
+  position: fixed;
+  display: none;
+  top: 70px;
+  right: 0;
+  bottom: 0;
+  width: var(--chat-list-width);
+  padding: 20px;
+  background-color: var(--chat-list-color);
+  z-index: 9000;
 }
 
 #list_container{
@@ -85,6 +117,14 @@
 
 #list_end {
   height: 150px;
+}
+
+#menu_icon, #menu_icon2{
+  width: 40px;
+  height: 40px;
+  margin: 10px;
+  background-color: var(--chat-user-color);
+  border-radius: 10px;
 }
 
 #user_message.locked {
@@ -113,6 +153,25 @@ a {
 a:visited {
   color: #ffffff; /* Desired link color for visited links */
 }
+
+.element-block{
+  margin-top: 40px;
+  width: 500px;
+  background-color: var(--chat-user-color);
+  border-radius: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+  padding-top: 10px;
+}
+.element-header {
+  display: flex;
+  justify-content: center; /* Centers items horizontally */
+  align-items: center;     /* Centers items vertically */
+  width: 100%;             /* Ensures it fills the width */
+}
+
+
 
 .list-icon {
   vertical-align: middle;

@@ -1,8 +1,27 @@
 from datetime import datetime
 import subprocess, openai, json, os, requests
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, abort, Response
+from flask import Flask, render_template, request, jsonify, abort, Response, session, redirect, url_for, flash
+from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.exceptions import NotFound
+from werkzeug.routing import RequestRedirect
 from openai.error import OpenAIError
+from functools import wraps
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
+import subprocess, json, os, random, re
+from flask import Flask, render_template, request, jsonify, abort, Response, g, send_from_directory, redirect, url_for, session, flash
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
+from werkzeug.utils import safe_join
+from werkzeug.exceptions import NotFound
+from werkzeug.routing import RequestRedirect
+from werkzeug.security import check_password_hash, generate_password_hash
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+from PIL import Image
+import random
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -13,9 +32,15 @@ app = Flask(__name__)
 load_dotenv() 
 openai.api_key = os.getenv('MY_API_KEY')
 openai_api_key = os.getenv('MY_API_KEY')
-secret_password = os.getenv('SECRET_PASSWORD')
 running_ollama = os.getenv('RUNNING_OLLAMA').lower()
 ollama_api_url = os.getenv('OLLAMA_API_URL')
+app.secret_key = os.getenv('SECRET_KEY')
+admin_username = os.getenv('ADMIN_NAME')
+admin_password = os.getenv('ADMIN_PASSWORD')
+admin_password_hash = generate_password_hash(admin_password)  
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///overburn.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 ollama_models = [
         'everythinglm',
         'llama2',
@@ -33,9 +58,57 @@ openai_models = [
         'gpt-4-0314',
         'gpt-4-0613',
         'gpt-4-1106-preview']
+
 default_model = 'gpt-3.5-turbo-16k'
 images = {}
 app_start_time = int(datetime.utcnow().timestamp())
+
+db = SQLAlchemy(app)
+
+class PageHit(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    page_url = db.Column(db.String(500))
+    hit_type = db.Column(db.String(50)) # 'image', 'valid', 'invalid'
+    visit_datetime = db.Column(db.DateTime, default=datetime.utcnow)
+    visitor_id = db.Column(db.String(100)) # IP or session ID
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('logged_in'):
+            return f(*args, **kwargs)
+        else:
+            flash('You need to be logged in to view this page.')
+            return redirect(url_for('admin_login'))
+    return decorated_function
+
+#-------------------------------------------------------------------
+# page count
+#-------------------------------------------------------------------
+
+@app.before_request
+def before_request():
+    page = request.path
+    hit_type = 'none'
+    visitor_id = request.headers.get('X-Forwarded-For', request.remote_addr)
+    ignore_list = ['thumbnail', 'icons']
+
+    for item in ignore_list:
+        if item in page:
+            return
+    try:
+        app.url_map.bind('').match(page)
+        if page.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+            hit_type = 'image'
+        else:
+            hit_type = 'valid'
+    except (NotFound, RequestRedirect):
+        hit_type = 'invalid'
+    finally:
+        new_hit = PageHit(page_url=page, hit_type=hit_type, visitor_id=visitor_id)
+        db.session.add(new_hit)
+        db.session.commit()
+
 
 #-------------------------------------------------------------------
 # chat functions 
@@ -128,26 +201,97 @@ load_images_to_memory()
 def index():
     return render_template('index.html')
 
-@app.route('/about', methods=['GET'])
-def about_page():
-    return render_template('about.html')
-
 @app.route('/view_count', methods=['GET'])
 def view_count_page():
     return render_template('count.html')
 
+@app.route('/count', methods=['GET', 'POST'])
+def count_page():
+
+    # Query and tally the valid page hits
+    exclude_words = ['admin', '404', 'thumbnail', 'icon', 'logout']
+    valid_hits = db.session.query(
+        PageHit.page_url,
+        func.count(PageHit.id)
+    ).filter(
+        PageHit.hit_type == 'valid',
+        ~PageHit.page_url.ilike(f'%{exclude_words[0]}%') if exclude_words else False,
+        *[
+            ~PageHit.page_url.ilike(f'%{word}%') for word in exclude_words[1:]
+        ]
+    ).group_by(PageHit.page_url).all()
+
+    # Query and tally the image page hits
+    image_hits = db.session.query(
+        PageHit.page_url, 
+        func.count(PageHit.id)
+    ).filter(
+        PageHit.hit_type == 'image',
+        ~PageHit.page_url.ilike(f'%{exclude_words[0]}%') if exclude_words else False,
+        *[
+            ~PageHit.page_url.ilike(f'%{word}%') for word in exclude_words[1:]
+        ]
+    ).group_by(PageHit.page_url).all()
+
+    # Query and tally the invalid page hits
+    invalid_hits = db.session.query(
+        PageHit.page_url, 
+        func.count(PageHit.id)
+    ).filter(PageHit.hit_type == 'invalid').group_by(PageHit.page_url).all()
+
+    total_unique = db.session.query(func.count(PageHit.visitor_id.distinct()))\
+                        .filter(PageHit.hit_type.in_(['valid', 'image']))\
+                        .scalar()
+    
+    #unique_ips = PageHit.query.filter((PageHit.hit_type == 'valid') | (PageHit.hit_type == 'image')) \
+    #                      .distinct(PageHit.visitor_id) \
+    #                      .with_entities(PageHit.visitor_id) \
+    #                      .all()
+
+    # Pass the tallied hits to the template
+    return render_template('count.html',
+                           page_hits=valid_hits,
+                           page_hits_images=image_hits,
+                           page_hits_invalid=invalid_hits,
+                           total_unique=total_unique)
+
+#-------------------------------------------------------------------
+# admin routes
 #-------------------------------------------------------------------
 
-@app.route('/update', methods=['GET', 'POST'])
-def update_server():
-    if request.method == 'POST':
-        if request.form.get('secret_word') == secret_password:
-            subprocess.run('python3 updater.py', shell=True)
+@app.route('/admin', methods=['GET', 'POST'])
+def admin_login():
+    if 'logged_in' in session and session['logged_in']:
+        return redirect(url_for('admin_dashboard'))
 
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username == admin_username and check_password_hash(admin_password_hash, password):
+            session['logged_in'] = True
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Invalid credentials')
+    return render_template('admin_login.html')  # Your login page template
+
+@app.route('/admin/dashboard')
+@admin_required
+def admin_dashboard():
     with open('data/update.log', 'r') as logfile:
         log_content = logfile.read()
+    return render_template('admin_dashboard.html', log_content=log_content, app_start_time=app_start_time)
 
-    return render_template('update.html', log_content=log_content, app_start_time=app_start_time)
+@app.route('/admin/update', methods=['GET', 'POST'])
+@admin_required
+def update_server():
+    subprocess.run('python3 updater.py', shell=True)
+    return '<html>Updated!</html>'
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('admin_login'))
+
 
 #-------------------------------------------------------------------
 # api routes
@@ -202,27 +346,31 @@ def chat():
 
 @app.route('/models', methods=['GET'])
 def return_models():
+    models = openai_models
     if running_ollama == 'true':
-        return '<br>'.join(openai_models + ollama_models)
-    return '<br>'.join(openai_models)
+        models.extend(ollama_models)
+    return json.dumps(models)
 
 @app.route('/count', methods=['GET'])
 def count_connections():
     return jsonify(ip_counts)
 
-@app.route('/gallery')
-def image_gallery():
-    html_content = '<!DOCTYPE html><html><body><center>'
-    
-    for filename in images.keys():
-        name, extension = os.path.splitext(filename)  
-        html_content += f'<figure><img src="/{name}{extension}" alt="{filename}">'
-        html_content += f'<figcaption>{filename}</figcaption></figure>'
+#-------------------------------------------------------------------
+# Error handlers
+#-------------------------------------------------------------------
 
-    html_content += '</center></body></html>'
-    return html_content
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 #-------------------------------------------------------------------
 
+with app.app_context():
+    db.create_all()
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    host = os.environ.get('HOST')
+    port = int(os.environ.get('PORT'))
+    debug = os.environ.get('DEBUG', 'False').lower() == 'true'
+    app.debug = debug
+    app.run(host=host, port=port)

@@ -1,6 +1,5 @@
 var chatHistories = [];
 var currentChatIndex = null;
-var currentModels = null;
 
 window.addEventListener('load', function () {
   currentChatIndex = 0;
@@ -19,22 +18,39 @@ window.addEventListener('load', function () {
   loadModels(); // Load the API models when the page loads
 });
 
+document.getElementById("menu_icon").addEventListener("click", function() {
+  var hiddenElement = document.getElementById("chats_list");
+  if (hiddenElement.style.display === "block") {
+    hiddenElement.style.display = "none";
+  } else {
+    hiddenElement.style.display = "block";
+  }
+});
+
+document.getElementById("menu_icon2").addEventListener("click", function() {
+  var hiddenElement = document.getElementById("menu_list");
+  if (hiddenElement.style.display === "block") {
+    hiddenElement.style.display = "none";
+  } else {
+    hiddenElement.style.display = "block";
+  }
+});
+
 async function loadModels() {
   try {
     const response = await fetch('/models'); // Fetch the models from the Flask route
 
     if (response.ok) {
-      const models = await response.text(); // Get the list of models as text
+      const models = await response.json(); // Parse the response as JSON
 
-      // Split the models by line breaks and populate the drop-down box options
-      const modelOptions = models.trim().split('<br>');
+      // Populate the drop-down box options with the models
       const dropdown = document.getElementById('chat-model');
       dropdown.innerHTML = '';
 
-      modelOptions.forEach(function (option) {
+      models.forEach(function (model) {
         const optionElement = document.createElement('option');
-        optionElement.text = option;
-        optionElement.value = option;
+        optionElement.text = model;
+        optionElement.value = model;
 
         dropdown.add(optionElement);
       });
@@ -62,8 +78,8 @@ function saveChatList(){
 function renderChatHistory() {
   resetChatEdits();
 
-  var chat_title = document.getElementById('chat_title');
-  chat_title.innerHTML = '<div class="chat-icon"></div><center><h3>' + chatHistories[currentChatIndex].title + '</h3></center>';
+  var chat_title = document.getElementById('chat_title_inner');
+  chat_title_inner.innerHTML = '</div><center><h3>' + chatHistories[currentChatIndex].title + '</h3></center>';
 
   var chatHistoryContainer = document.getElementById('chat_history');
   let htmlString = '';
@@ -178,13 +194,6 @@ function init_chat_list(){
     <button id="delete_button" onclick="deleteCurrentChat()">Delete</button>
     <button id="clear_storage_button" onclick="clearLocalStorage()">Delete All</button>
     <br><br>
-  `;
-  
-  //add page links  
-  chat_list_end.innerHTML += `
-    <a href="/view_count">Counts</a><br>
-    <a href="/update">Update</a><br>
-    <a href="/about">About</a><br>
   `;
 }
 

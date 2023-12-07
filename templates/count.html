@@ -1,89 +1,83 @@
 {% extends "base.html" %}
 
-{% block title %} Overburn.org - Counts {% endblock %}
+{% block title %}
+    Overburn - Page Hits
+{% endblock %}
 
 {% block head %}
     <style>
-        a {
-            color: white;
-            text-decoration: none;
+        /* Styles for the table on /count page */
+        .hits_table {
+        margin: 0 auto; /* Centers the table */
+        width: 500px; /* Adjust width as needed */
+        border-collapse: collapse; /* Removes space between table cells */
+        background: #444654; /* Background color */
         }
 
-        a:visited {
-            color: white;
-            text-decoration: none;
+        .hits_table th, .hits_table td {
+        padding: 10px; /* Spacing inside cells */
+        text-align: center; /* Center-align text */
         }
 
-        body{
-            background-color: #343541;
-            color: #f5f5f5;
-        }
-        table {
-            width: 500px;
-            margin: 20px auto;
-            border-collapse: collapse;
+        .hits_table th {
+        background: #202123; /* Header background color */
+        color: antiquewhite; /* Header text color */
         }
 
-        th,
-        td {
-            border: 0px;
-            padding: 8px 12px;
-            color: white;
-        }
-
-        th {
-            background-color: #413434;
-        }
-
-        td {
-            background-color: #030303;
+        .hits_table td {
+        color: antiquewhite; /* Cell text color */
         }
     </style>
 {% endblock %}
 
-{% block body %}
-    <a href="{{ url_for('index') }}">index.html</a><br>
-    <table id="chatsTable">
-        <thead>
+{% block content %}
+    <div class = 'element-block'>
+        <p>{{total_unique}} total unique visitors</p>
+    </div>
+
+    {{ block_header('Page Hits')}}
+        <table class="hits_table">
             <tr>
-                <th>IP Address</th>
-                <th>Chats</th>
+                <th>Page</th>
+                <th>Hits</th>
             </tr>
-        </thead>
-        <tbody id="chatsTableBody">
-            <!-- Data will be populated here using JavaScript -->
-        </tbody>
-    </table>
-{% endblock %}
+            {% for page, hits in page_hits %}
+            <tr>
+                <td>{{ page }}</td>
+                <td>{{ hits }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {{ block_footer() }}
 
-{% block scripts %}
-    <script>
-        async function fetchAndDisplayCounts() {
-            const chatsTableBody = document.getElementById('chatsTableBody');
+    {{ block_header('Image Hits')}}
+        <table class="hits_table">
+            <tr>
+                <th>Image Page</th>
+                <th>Hits</th>
+            </tr>
+            {% for page, hits in page_hits_images %}
+            <tr>
+                <td><a href="{{ page }}">{{ page }}</a></td>
+                <td>{{ hits }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {{ block_footer() }}
 
-            try {
-                const response = await fetch('/count');
-                const data = await response.json();
-
-                // Sort the data by chat count in descending order
-                const sortedData = Object.entries(data)
-                .sort(([, a], [, b]) => b - a);
-
-                for (const [ip, chatsCount] of sortedData) {
-                    const row = `
-                        <tr>
-                            <td>${ip}</td>
-                            <td>${chatsCount}</td>
-                        </tr>
-                    `;
-
-                    chatsTableBody.innerHTML += row;
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        }
-
-        fetchAndDisplayCounts();
-    </script>
+    {{ block_header('Invalid hits')}}
+        <table class="hits_table">
+            <tr>
+                <th>Page</th>
+                <th>Hits</th>
+            </tr>
+            {% for page, hits in page_hits_invalid %}
+            <tr>
+                <td>{{ page }}</td>
+                <td>{{ hits }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {{ block_footer() }}
+    
 {% endblock %}

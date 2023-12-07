@@ -1,27 +1,23 @@
 {% extends "base.html" %}
 
 {% block title %}Overburn.org{% endblock %}
-{% block head %}{% endblock %}
+{% block head %}
+{% endblock %}
 
-{% block body %}
+{% block content %}
+
     <div id="chat_history"></div>
     <div id="chat_bottom">
-      <center>
-        <div id="chat_input_container">
-          <div id="file_upload">
-            <input type="file" id="codeFiles" multiple accept=".txt, .js, .py, .java, .c, .cpp, .h, .html, .css, .xml, .json, .csv, .md, .sh, .bat, .cmd, .sql, .ini, .cfg, .conf, .log" style="display:none;" onchange="handleFiles()">
-            <button id="uploadButton" onclick="document.getElementById('codeFiles').click()">Attach Files</button>
-          </div>
-          <div id="message_entry">
-            <textarea id="user_message"></textarea>
-            <button id="send_button" onclick="sendMessage()">Send</button>
-          </div>    
+      <div id="chat_input_container">
+        <div id="file_upload">
+          <input type="file" id="codeFiles" multiple accept=".txt, .js, .py, .java, .c, .cpp, .h, .html, .css, .xml, .json, .csv, .md, .sh, .bat, .cmd, .sql, .ini, .cfg, .conf, .log" style="display:none;" onchange="handleFiles()">
+          <button id="uploadButton" onclick="document.getElementById('codeFiles').click()">Attach Files</button>
         </div>
-      </center>
+        <div id="message_entry">
+          <textarea id="user_message"></textarea>
+          <button id="send_button" onclick="sendMessage()">Send</button>
+        </div>    
+      </div>
     </div> 
 {% endblock %}
 
-{% block scripts %}
-<script src="{{ url_for('static', filename='prism.js') }}"></script>
-<script src="{{ url_for('static', filename='script.js') }}"></script>
-{% endblock %}
