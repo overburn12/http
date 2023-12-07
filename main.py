@@ -160,7 +160,6 @@ def before_request():
         hit_type = 'invalid'
     finally:
         new_hit = PageHit(page_url=page, hit_type=hit_type, visitor_id=visitor_id)
-        print(f"Page: {page}, Hit Type: {hit_type}, Visitor ID: {visitor_id}, endpoint: {request.endpoint}")
         db.session.add(new_hit)
         db.session.commit()
 
