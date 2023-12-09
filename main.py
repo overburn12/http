@@ -220,6 +220,10 @@ def count_page():
                            page_hits_invalid=invalid_hits,
                            total_unique=total_unique)
 
+@app.route('/linda', methods=['GET', 'POST'])
+def linda():
+    return render_template("linda.html")
+
 #-------------------------------------------------------------------
 # admin routes
 #-------------------------------------------------------------------
