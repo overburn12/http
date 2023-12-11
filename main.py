@@ -18,13 +18,8 @@ app = Flask(__name__)
 
 load_dotenv() 
 openai.api_key = os.getenv('MY_API_KEY')
-openai_api_key = os.getenv('MY_API_KEY')
 running_ollama = os.getenv('RUNNING_OLLAMA').lower()
 ollama_api_url = os.getenv('OLLAMA_API_URL')
-app.secret_key = os.getenv('SECRET_KEY')
-admin_username = os.getenv('ADMIN_NAME')
-admin_password = os.getenv('ADMIN_PASSWORD')
-admin_password_hash = generate_password_hash(admin_password)  
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///overburn.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -55,16 +50,6 @@ class PageHit(db.Model):
     hit_type = db.Column(db.String(50)) # 'image', 'valid', 'invalid'
     visit_datetime = db.Column(db.DateTime, default=datetime.utcnow)
     visitor_id = db.Column(db.String(100)) # IP or session ID
-
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if session.get('logged_in'):
-            return f(*args, **kwargs)
-        else:
-            flash('You need to be logged in to view this page.')
-            return redirect(url_for('admin_login'))
-    return decorated_function
 
 #-------------------------------------------------------------------
 # chat functions 
