@@ -1,27 +1,14 @@
-from datetime import datetime
 import subprocess, openai, json, os, requests
-from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, abort, Response, session, redirect, url_for, flash
-from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.exceptions import NotFound
-from werkzeug.routing import RequestRedirect
 from openai.error import OpenAIError
+from datetime import datetime
+from dotenv import load_dotenv
 from functools import wraps
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
-import subprocess, json, os, random, re
-from flask import Flask, render_template, request, jsonify, abort, Response, g, send_from_directory, redirect, url_for, session, flash
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
-from werkzeug.utils import safe_join
+from flask import Flask, render_template, request, jsonify, abort, Response, session, redirect, url_for, flash, send_from_directory
+from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.exceptions import NotFound
 from werkzeug.routing import RequestRedirect
-from werkzeug.security import check_password_hash, generate_password_hash
-from datetime import datetime, timedelta
-from dotenv import load_dotenv
-from PIL import Image
-import random
-from werkzeug.utils import secure_filename
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 
 app = Flask(__name__)
 
@@ -142,13 +129,9 @@ def process_title_message(chat_history, model):
 @app.before_request
 def before_request():
     page = request.path
-    hit_type = 'none'
+    hit_type = 'invalid'
     visitor_id = request.headers.get('X-Forwarded-For', request.remote_addr)
-    ignore_list = ['thumbnail', 'icons']
 
-    for item in ignore_list:
-        if item in page:
-            return
     try:
         app.url_map.bind('').match(page)
         if page.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
@@ -170,112 +153,21 @@ def before_request():
 def index():
     return render_template('index.html')
 
-@app.route('/count', methods=['GET', 'POST'])
-def count_page():
-
-    # Query and tally the valid page hits
-    exclude_words = ['exclude-nothing']
-    valid_hits = db.session.query(
-        PageHit.page_url,
-        func.count(PageHit.id)
-    ).filter(
-        PageHit.hit_type == 'valid',
-        ~PageHit.page_url.ilike(f'%{exclude_words[0]}%') if exclude_words else False,
-        *[
-            ~PageHit.page_url.ilike(f'%{word}%') for word in exclude_words[1:]
-        ]
-    ).group_by(PageHit.page_url).all()
-
-    # Query and tally the image page hits
-    image_hits = db.session.query(
-        PageHit.page_url, 
-        func.count(PageHit.id)
-    ).filter(
-        PageHit.hit_type == 'image',
-        ~PageHit.page_url.ilike(f'%{exclude_words[0]}%') if exclude_words else False,
-        *[
-            ~PageHit.page_url.ilike(f'%{word}%') for word in exclude_words[1:]
-        ]
-    ).group_by(PageHit.page_url).all()
-
-    # Query and tally the invalid page hits
-    invalid_hits = db.session.query(
-        PageHit.page_url, 
-        func.count(PageHit.id)
-    ).filter(PageHit.hit_type == 'invalid').group_by(PageHit.page_url).all()
-
-    total_unique = db.session.query(func.count(PageHit.visitor_id.distinct()))\
-                        .filter(PageHit.hit_type.in_(['valid', 'image']))\
-                        .scalar()
-    
-    #unique_ips = PageHit.query.filter((PageHit.hit_type == 'valid') | (PageHit.hit_type == 'image')) \
-    #                      .distinct(PageHit.visitor_id) \
-    #                      .with_entities(PageHit.visitor_id) \
-    #                      .all()
-
-    # Pass the tallied hits to the template
-    return render_template('count.html',
-                           page_hits=valid_hits,
-                           page_hits_images=image_hits,
-                           page_hits_invalid=invalid_hits,
-                           total_unique=total_unique)
-
 @app.route('/linda', methods=['GET', 'POST'])
 def linda():
     return render_template("linda.html")
 
 #-------------------------------------------------------------------
-# admin routes
-#-------------------------------------------------------------------
-
-@app.route('/admin', methods=['GET', 'POST'])
-def admin_login():
-    if 'logged_in' in session and session['logged_in']:
-        return redirect(url_for('admin_dashboard'))
-
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        if username == admin_username and check_password_hash(admin_password_hash, password):
-            session['logged_in'] = True
-            return redirect(url_for('admin_dashboard'))
-        else:
-            flash('Invalid credentials')
-    return render_template('admin_login.html')  # Your login page template
-
-@app.route('/admin/dashboard')
-@admin_required
-def admin_dashboard():
-    with open('data/update.log', 'r') as logfile:
-        log_content = logfile.read()
-    return render_template('admin_dashboard.html', log_content=log_content, app_start_time=app_start_time)
-
-@app.route('/admin/update', methods=['GET', 'POST'])
-@admin_required
-def update_server():
-    subprocess.run('python3 updater.py', shell=True)
-    return '<html>Updated!</html>'
-
-# Example endpoint to call the reset_database function
-@app.route("/admin/reset", methods=['GET'])
-@admin_required
-def reset():
-    # Drop all tables
-    db.reflect()
-    db.drop_all()
-
-    # Recreate the tables
-    db.create_all()
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/logout')
-def logout():
-    session.pop('logged_in', None)
-    return redirect(url_for('admin_login'))
-
-#-------------------------------------------------------------------
 # api routes
 #-------------------------------------------------------------------
+
+@app.route('/favicon.ico')
+def serve_favicon():
+    favicon_dir = 'img/'
+    try:
+        return send_from_directory(favicon_dir, 'favicon.ico')
+    except FileNotFoundError:
+        abort(404)
 
 @app.route('/img/<path:image_name>')
 def serve_image(image_name):
@@ -299,7 +191,6 @@ def get_title():
 
 @app.route('/chat', methods=['POST','GET'])
 def chat():
-    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
 
     user_message = request.json['user_message']
     model = request.json.get('model', 'gpt-3.5-turbo-16k')
