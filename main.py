@@ -9,6 +9,7 @@ from werkzeug.exceptions import NotFound
 from werkzeug.routing import RequestRedirect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 
@@ -43,13 +44,16 @@ openai_models = [
 
 app_start_time = int(datetime.utcnow().timestamp())
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 class PageHit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     page_url = db.Column(db.String(500))
-    hit_type = db.Column(db.String(50)) # 'image', 'valid', 'invalid'
+    hit_type = db.Column(db.String(50))  # 'image', 'valid', 'invalid', 'suspicious'
     visit_datetime = db.Column(db.DateTime, default=datetime.utcnow)
-    visitor_id = db.Column(db.String(100)) # IP or session ID
+    visitor_id = db.Column(db.String(100))  # IP or session ID
+    referrer_url = db.Column(db.String(500))  # URL of the referring page
+    user_agent = db.Column(db.String(500))  # String representing the client's user agent
 
 #-------------------------------------------------------------------
 # chat functions 
