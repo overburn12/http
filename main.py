@@ -10,6 +10,7 @@ from werkzeug.routing import RequestRedirect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from flask_migrate import Migrate
+import ipaddress
 
 app = Flask(__name__)
 
@@ -58,6 +59,13 @@ class PageHit(db.Model):
 #-------------------------------------------------------------------
 # chat functions 
 #-------------------------------------------------------------------
+
+def is_valid_ip(ip_addr):
+    try:
+        ipaddress.ip_address(ip_addr)
+        return True
+    except ValueError:
+        return False
 
 def process_openai_message(chat_history, model):
     try:
@@ -115,24 +123,31 @@ def process_title_message(chat_history, model):
 # page count
 #-------------------------------------------------------------------
 
-@app.before_request
-def before_request():
-    page = request.path
-    hit_type = 'invalid'
+@app.after_request
+def after_request(response):
+    page_url = request.path
     visitor_id = request.headers.get('X-Forwarded-For', request.remote_addr)
+    referrer_url = request.referrer
+    user_agent = request.user_agent.string
+    ignore_list = ['thumbnail', 'icons']
 
-    try:
-        app.url_map.bind('').match(page)
-        if page.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
-            hit_type = 'image'
-        else:
-            hit_type = 'valid'
-    except (NotFound, RequestRedirect):
+    for item in ignore_list:
+        if item in page_url:
+            return response
+
+    if not is_valid_ip(visitor_id):
+        hit_type = 'suspicious'
+    elif response.status_code == 404:
         hit_type = 'invalid'
-    finally:
-        new_hit = PageHit(page_url=page, hit_type=hit_type, visitor_id=visitor_id)
-        db.session.add(new_hit)
-        db.session.commit()
+    elif page_url.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+        hit_type = 'image'
+    else:
+        hit_type = 'valid'
+
+    new_hit = PageHit(page_url=page_url, hit_type=hit_type, visitor_id=visitor_id,referrer_url=referrer_url,user_agent=user_agent)
+    db.session.add(new_hit)
+    db.session.commit()
+    return response
 
 #-------------------------------------------------------------------
 # page routes
