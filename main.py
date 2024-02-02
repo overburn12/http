@@ -31,17 +31,6 @@ ollama_models = [
         'llama2-uncensored',
         'orca-mini',
         'wizardlm-uncensored']
-openai_models = [
-        'gpt-3.5-turbo',
-        'gpt-3.5-turbo-0301',
-        'gpt-3.5-turbo-0613',
-        'gpt-3.5-turbo-1106',
-        'gpt-3.5-turbo-16k',
-        'gpt-3.5-turbo-16k-0613',
-        'gpt-4',
-        'gpt-4-0314',
-        'gpt-4-0613',
-        'gpt-4-1106-preview']
 
 app_start_time = int(datetime.utcnow().timestamp())
 db = SQLAlchemy(app)
@@ -209,7 +198,11 @@ def chat():
 
 @app.route('/models', methods=['GET'])
 def return_models():
-    models = openai_models
+    response = openai.Model.list()
+    # Filtering for models with specific keywords in their IDs
+    chat_model_keywords = ["gpt"]
+    chat_models = [model for model in response['data'] if any(keyword in model['id'] for keyword in chat_model_keywords)]
+    models = [model['id'] for model in chat_models]  # Extracting model ids into a list
     if running_ollama == 'true':
         models.extend(ollama_models)
     return json.dumps(models)
