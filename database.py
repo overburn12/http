@@ -33,13 +33,12 @@ def track_page(request, response):
     visitor_id = request.headers.get('X-Forwarded-For', request.remote_addr)
     referrer_url = request.referrer
     user_agent = request.user_agent.string
-    ignore_list = ['thumbnail', 'icons']
-
-    for item in ignore_list:
-        if item in page_url:
-            return response
 
     if not is_valid_ip(visitor_id):
+        hit_type = 'suspicious'
+    elif ':NaN:' in user_agent:
+        hit_type = 'suspicious'
+    elif ':NaN:' in referrer_url:
         hit_type = 'suspicious'
     elif response.status_code == 404:
         hit_type = 'invalid'

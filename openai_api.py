@@ -1,7 +1,6 @@
 import openai, requests, json, os
 from openai.error import OpenAIError
 
-
 ollama_models = [
         'everythinglm',
         'llama2',
