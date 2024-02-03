@@ -1,142 +1,15 @@
-import subprocess, openai, json, os, requests
-from openai.error import OpenAIError
-from datetime import datetime
+import json, os
 from dotenv import load_dotenv
-from functools import wraps
-from flask import Flask, render_template, request, jsonify, abort, Response, session, redirect, url_for, flash, send_from_directory
-from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.exceptions import NotFound
-from werkzeug.routing import RequestRedirect
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
-from flask_migrate import Migrate
-import ipaddress
+from flask import Flask, render_template, request, jsonify, abort, Response, send_from_directory
+
+from database import track_page, init_db
+from openai_api import init_api, list_models, process_ollama_message, process_openai_message, process_title_message, ollama_models
 
 app = Flask(__name__)
 
-#-------------------------------------------------------------------
-# app variables 
-#-------------------------------------------------------------------
-
 load_dotenv() 
-openai.api_key = os.getenv('MY_API_KEY')
-running_ollama = os.getenv('RUNNING_OLLAMA').lower()
-ollama_api_url = os.getenv('OLLAMA_API_URL')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///overburn.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-ollama_models = [
-        'everythinglm',
-        'llama2',
-        'llama2-uncensored',
-        'orca-mini',
-        'wizardlm-uncensored']
-
-app_start_time = int(datetime.utcnow().timestamp())
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-
-class PageHit(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    page_url = db.Column(db.String(500))
-    hit_type = db.Column(db.String(50))  # 'image', 'valid', 'invalid', 'suspicious'
-    visit_datetime = db.Column(db.DateTime, default=datetime.utcnow)
-    visitor_id = db.Column(db.String(100))  # IP or session ID
-    referrer_url = db.Column(db.String(500))  # URL of the referring page
-    user_agent = db.Column(db.String(500))  # String representing the client's user agent
-
-#-------------------------------------------------------------------
-# chat functions 
-#-------------------------------------------------------------------
-
-def is_valid_ip(ip_addr):
-    try:
-        ipaddress.ip_address(ip_addr)
-        return True
-    except ValueError:
-        return False
-
-def process_openai_message(chat_history, model):
-    try:
-        response = openai.ChatCompletion.create(
-            model=model,
-            messages=chat_history,
-            stream=True
-        )
-        for message in response:
-            yield message
-    except OpenAIError as e:
-        yield {'error': str(e)}
-
-def process_ollama_message(chat_history, model):
-    prompt = chat_history[-1]['content']
-
-    response = requests.post(
-        ollama_api_url,
-        headers={'Authorization': 'Bearer YOUR_API_TOKEN'},
-        json={
-            'model': model,
-            'prompt': prompt
-        },
-        stream=True
-    )
-    
-    for line in response.iter_lines():
-        if line:
-            decoded_line = line.decode('utf-8')
-            json_data = json.loads(decoded_line)
-            generated_text = json_data.get('response', '')
-            done = json_data.get('done', False)
-
-            yield {
-                'choices': [{
-                    'delta': {
-                        'content': generated_text
-                    },
-                    'finish_reason': 'stop' if done else None
-                }]
-            }
-
-def process_title_message(chat_history, model):
-    try:
-        response = openai.ChatCompletion.create(
-            model=model,
-            messages=chat_history  
-        )
-        ai_message = {'role': 'assistant', 'content': response['choices'][0]['message']['content']}
-        return ai_message
-    except OpenAIError as e:
-        return {'error': str(e)}
-
-#-------------------------------------------------------------------
-# page count
-#-------------------------------------------------------------------
-
-@app.after_request
-def after_request(response):
-    page_url = request.path
-    visitor_id = request.headers.get('X-Forwarded-For', request.remote_addr)
-    referrer_url = request.referrer
-    user_agent = request.user_agent.string
-    ignore_list = ['thumbnail', 'icons']
-
-    for item in ignore_list:
-        if item in page_url:
-            return response
-
-    if not is_valid_ip(visitor_id):
-        hit_type = 'suspicious'
-    elif response.status_code == 404:
-        hit_type = 'invalid'
-    elif page_url.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
-        hit_type = 'image'
-    else:
-        hit_type = 'valid'
-
-    new_hit = PageHit(page_url=page_url, hit_type=hit_type, visitor_id=visitor_id,referrer_url=referrer_url,user_agent=user_agent)
-    db.session.add(new_hit)
-    db.session.commit()
-    return response
+init_db()
+init_api()
 
 #-------------------------------------------------------------------
 # page routes
@@ -145,14 +18,6 @@ def after_request(response):
 @app.route('/')
 def index():
     return render_template('index.html')
-
-@app.route('/linda', methods=['GET', 'POST'])
-def linda():
-    return render_template("linda.html")
-
-#-------------------------------------------------------------------
-# api routes
-#-------------------------------------------------------------------
 
 @app.route('/favicon.ico')
 def serve_favicon():
@@ -169,6 +34,10 @@ def serve_image(image_name):
         return send_from_directory(image_dir, image_name)
     except FileNotFoundError:
         abort(404)
+
+#-------------------------------------------------------------------
+# api routes
+#-------------------------------------------------------------------
 
 @app.route('/title', methods=['POST','GET'])
 def get_title():
@@ -198,27 +67,20 @@ def chat():
 
 @app.route('/models', methods=['GET'])
 def return_models():
-    response = openai.Model.list()
-    # Filtering for models with specific keywords in their IDs
-    chat_model_keywords = ["gpt"]
-    chat_models = [model for model in response['data'] if any(keyword in model['id'] for keyword in chat_model_keywords)]
-    models = [model['id'] for model in chat_models]  # Extracting model ids into a list
-    if running_ollama == 'true':
-        models.extend(ollama_models)
-    return json.dumps(models)
+    return json.dumps(list_models())
 
 #-------------------------------------------------------------------
-# Error handlers
-#-------------------------------------------------------------------
+
+@app.after_request
+def after_request(response):
+    track_page(request, response)
+    return response
 
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
 
 #-------------------------------------------------------------------
-
-with app.app_context():
-    db.create_all()
 
 if __name__ == '__main__':
     host = os.environ.get('HOST')

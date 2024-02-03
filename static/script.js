@@ -427,7 +427,7 @@ async function generateTitle(chat_history, selectedModel) {
 
     var botMessage = { role: 'assistant', content: summaryData.bot_message.content.replace(/["\\]/g, "") };
     var spaceCount = (botMessage.content.match(/ /g) || []).length;
-    if (spaceCount > 4) {
+    if (spaceCount > 7) {
       return "too long :(";
     } else {
       return botMessage.content;
