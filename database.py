@@ -31,8 +31,8 @@ def is_valid_ip(ip_addr):
 def track_page(request, response):
     page_url = request.path
     visitor_id = request.headers.get('X-Forwarded-For', request.remote_addr)
-    referrer_url = request.referrer
-    user_agent = request.user_agent.string
+    referrer_url = request.referrer or ''
+    user_agent = request.user_agent.string or ''
 
     if not is_valid_ip(visitor_id):
         hit_type = 'suspicious'
