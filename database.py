@@ -53,3 +53,39 @@ def track_page(request, response):
         session.commit()
 
     return response
+
+
+def fix_db_error():
+    # Database connection
+    DATABASE_URI = 'sqlite:///instance/overburn.db'
+    engine = create_engine(DATABASE_URI)
+    Session = sessionmaker(bind=engine)
+
+    # Renaming the table
+    old_table_name = 'pagehits'
+    new_table_name = 'page_hit'
+
+    # Query to select all records from the old table
+    with Session() as session:
+        result = session.execute(f"SELECT * FROM {old_table_name}")
+
+        # Insert records into the new table
+        for row in result.fetchall():
+            page_hit = PageHit(
+                page_url=row['page_url'],
+                hit_type=row['hit_type'],
+                visit_datetime=datetime.strptime(row['visit_datetime'], '%Y-%m-%d %H:%M:%S'),
+                visitor_id=row['visitor_id'],
+                referrer_url=row['referrer_url'],
+                user_agent=row['user_agent']
+            )
+            session.add(page_hit)
+
+        # Commit the changes and close the session
+        session.commit()
+        print(f"Data loaded into the '{new_table_name}' table successfully.")
+
+        # Drop the old table
+        session.execute(f"DROP TABLE {old_table_name}")
+        session.commit()
+        print(f"The '{old_table_name}' table has been dropped.")

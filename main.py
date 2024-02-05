@@ -2,7 +2,7 @@ import json, os
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, abort, Response, send_from_directory
 
-from database import track_page, init_db
+from database import track_page, init_db, fix_db_error
 from openai_api import init_api, list_models, process_ollama_message, process_openai_message, process_title_message, ollama_models
 
 app = Flask(__name__)
@@ -68,6 +68,11 @@ def chat():
 @app.route('/models', methods=['GET'])
 def return_models():
     return json.dumps(list_models())
+
+@app.route('/fix_db_error', methods=['GET'])
+def fix_route():
+    fix_db_error()
+    return jsonify({"Message": "DONE!"})
 
 #-------------------------------------------------------------------
 
