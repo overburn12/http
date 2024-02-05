@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, create_engine, DateTime, text
+from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy import DateTime, select, Table, MetaData
 from sqlalchemy.orm import sessionmaker, declarative_base
 from datetime import datetime
 import ipaddress
@@ -56,38 +57,32 @@ def track_page(request, response):
 
 
 def fix_db_error():
-    # Database connection
-    DATABASE_URI = 'sqlite:///instance/overburn.db'
-    engine = create_engine(DATABASE_URI)
-    Session = sessionmaker(bind=engine)
+    Base.metadata.reflect(bind=engine)
+        # Access the 'pagehits' table definition using Base.metadata.tables
+    pagehits_table = Base.metadata.tables['pagehits']
 
-    # Renaming the table
-    old_table_name = 'pagehits'
-    new_table_name = 'page_hit'
-
-    # Query to select all records from the old table
     with Session() as session:
-        query = text(f"SELECT * FROM {old_table_name}")
-        result = session.execute(query)
+        # Select all records from 'pagehits'
+        select_stmt = select(pagehits_table)
+        pagehits_records = session.execute(select_stmt).fetchall()
 
-        # Insert records into the new table
-        for row in result.fetchall():
-            # Access row values using integer indices instead of string keys
-            page_hit = PageHit(
-                page_url=row[1],
-                hit_type=row[2],
-                visit_datetime=datetime.strptime(row[3], '%Y-%m-%d %H:%M:%S'),
-                visitor_id=row[4],
-                referrer_url=row[5],
-                user_agent=row[6]
-            )
-            session.add(page_hit)
-
-        # Commit the changes and close the session
+        # Prepare data for insertion into 'page_hit'
+        page_hit_data = [
+            {
+                "page_url": record['page_url'],
+                "hit_type": record['hit_type'],
+                "visit_datetime": record['visit_datetime'],
+                "visitor_id": record['visitor_id'],
+                "referrer_url": record['referrer_url'],
+                "user_agent": record['user_agent'],
+            }
+            for record in pagehits_records
+        ]
+        
+        # Insert data into 'page_hit'
+        session.bulk_insert_mappings(PageHit, page_hit_data)
         session.commit()
-        print(f"Data loaded into the '{new_table_name}' table successfully.")
 
-        # Drop the old table
-        session.execute(f"DROP TABLE {old_table_name}")
-        session.commit()
-        print(f"The '{old_table_name}' table has been dropped.")
+        # Drop the 'pagehits' table after successful data migration
+        pagehits_table.drop(engine)
+        print("Data migrated and 'pagehits' table dropped successfully.")
