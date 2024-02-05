@@ -69,12 +69,12 @@ def fix_db_error():
         # Prepare data for insertion into 'page_hit'
         page_hit_data = [
             {
-                "page_url": record['page_url'],
-                "hit_type": record['hit_type'],
-                "visit_datetime": record['visit_datetime'],
-                "visitor_id": record['visitor_id'],
-                "referrer_url": record['referrer_url'],
-                "user_agent": record['user_agent'],
+                "page_url": record.page_url,
+                "hit_type": record.hit_type,
+                "visit_datetime": record.visit_datetime,
+                "visitor_id": record.visitor_id,
+                "referrer_url": record.referrer_url,
+                "user_agent": record.user_agent,
             }
             for record in pagehits_records
         ]
