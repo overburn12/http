@@ -72,13 +72,14 @@ def fix_db_error():
 
         # Insert records into the new table
         for row in result.fetchall():
+            # Access row values using integer indices instead of string keys
             page_hit = PageHit(
-                page_url=row['page_url'],
-                hit_type=row['hit_type'],
-                visit_datetime=datetime.strptime(row['visit_datetime'], '%Y-%m-%d %H:%M:%S'),
-                visitor_id=row['visitor_id'],
-                referrer_url=row['referrer_url'],
-                user_agent=row['user_agent']
+                page_url=row[1],
+                hit_type=row[2],
+                visit_datetime=datetime.strptime(row[3], '%Y-%m-%d %H:%M:%S'),
+                visitor_id=row[4],
+                referrer_url=row[5],
+                user_agent=row[6]
             )
             session.add(page_hit)
 
