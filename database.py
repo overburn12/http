@@ -9,7 +9,7 @@ Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
 class PageHit(Base):
-    __tablename__ = 'pagehits'
+    __tablename__ = 'page_hit'
     id = Column(Integer, primary_key=True)
     page_url = Column(String(500))
     hit_type = Column(String(50))  # 'image', 'valid', 'invalid', 'suspicious'
