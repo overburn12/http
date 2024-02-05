@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String, create_engine
-from sqlalchemy import DateTime, select, Table, MetaData
+from sqlalchemy import Column, Integer, String, create_engine, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base
 from datetime import datetime
 import ipaddress
@@ -54,35 +53,3 @@ def track_page(request, response):
         session.commit()
 
     return response
-
-
-def fix_db_error():
-    Base.metadata.reflect(bind=engine)
-        # Access the 'pagehits' table definition using Base.metadata.tables
-    pagehits_table = Base.metadata.tables['pagehits']
-
-    with Session() as session:
-        # Select all records from 'pagehits'
-        select_stmt = select(pagehits_table)
-        pagehits_records = session.execute(select_stmt).fetchall()
-
-        # Prepare data for insertion into 'page_hit'
-        page_hit_data = [
-            {
-                "page_url": record.page_url,
-                "hit_type": record.hit_type,
-                "visit_datetime": record.visit_datetime,
-                "visitor_id": record.visitor_id,
-                "referrer_url": record.referrer_url,
-                "user_agent": record.user_agent,
-            }
-            for record in pagehits_records
-        ]
-        
-        # Insert data into 'page_hit'
-        session.bulk_insert_mappings(PageHit, page_hit_data)
-        session.commit()
-
-        # Drop the 'pagehits' table after successful data migration
-        pagehits_table.drop(engine)
-        print("Data migrated and 'pagehits' table dropped successfully.")

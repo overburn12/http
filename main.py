@@ -69,11 +69,6 @@ def chat():
 def return_models():
     return json.dumps(list_models())
 
-@app.route('/fix_db_error', methods=['GET'])
-def fix_route():
-    fix_db_error()
-    return jsonify({"Message": "DONE!"})
-
 #-------------------------------------------------------------------
 
 @app.after_request
