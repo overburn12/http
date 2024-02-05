@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, create_engine, DateTime
+from sqlalchemy import Column, Integer, String, create_engine, DateTime, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from datetime import datetime
 import ipaddress
@@ -67,7 +67,8 @@ def fix_db_error():
 
     # Query to select all records from the old table
     with Session() as session:
-        result = session.execute(f"SELECT * FROM {old_table_name}")
+        query = text(f"SELECT * FROM {old_table_name}")
+        result = session.execute(query)
 
         # Insert records into the new table
         for row in result.fetchall():
