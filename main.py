@@ -2,7 +2,7 @@ import json, os
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, abort, Response, send_from_directory
 
-from database import track_page, init_db, fix_db_error
+from database import track_page, init_db
 from openai_api import init_api, list_models, process_ollama_message, process_openai_message, process_title_message, ollama_models
 
 app = Flask(__name__)
