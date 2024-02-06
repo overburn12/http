@@ -5,7 +5,18 @@ from flask import Flask, render_template, request, jsonify, abort, Response, sen
 from database import track_page, init_db
 from openai_api import init_api, list_models, process_ollama_message, process_openai_message, process_title_message, ollama_models
 
+
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 app = Flask(__name__)
+
+# Initialize Flask-Limiter to apply a global limit
+limiter = Limiter(
+    key_func=get_remote_address,  # Identify clients by IP address
+    default_limits=["10 per 10 seconds"]  # Apply this limit to all routes
+)
+limiter.init_app(app)
 
 load_dotenv() 
 init_db()
