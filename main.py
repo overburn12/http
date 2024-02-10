@@ -38,6 +38,11 @@ def serve_favicon():
     except FileNotFoundError:
         abort(404)
 
+@app.route('/robots.txt')
+def robots_txt():
+    content = "User-agent: *\nDisallow: /"
+    return Response(content, mimetype='text/plain')
+
 @app.route('/img/<path:image_name>')
 def serve_image(image_name):
     image_dir = 'img/'
