@@ -24,12 +24,19 @@ def init_api():
 def list_models():
     response = openai.Model.list()
     # Filtering for models with specific keywords in their IDs
-    chat_model_keywords = ["gpt"]
-    chat_models = [model for model in response['data'] if any(keyword in model['id'] for keyword in chat_model_keywords)]
+    chat_model_keywords = ['gpt']
+    chat_model_exclude = ['vision', 'instruct']
+    
+    # Include models with chat_model_keywords and exclude those with chat_model_exclude
+    chat_models = [model for model in response['data'] 
+                   if any(keyword in model['id'] for keyword in chat_model_keywords)
+                   and not any(exclude in model['id'] for exclude in chat_model_exclude)]
+    
     models = [model['id'] for model in chat_models]  # Extracting model ids into a list
     if running_ollama == 'true':
         models.extend(ollama_models)
     return models
+
 
 def process_openai_message(chat_history, model):
     try:
