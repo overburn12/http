@@ -15,7 +15,6 @@ def init_api():
     
     openai.api_key = os.getenv('MY_API_KEY')
     running_ollama = os.getenv('RUNNING_OLLAMA').lower()
-    print ("RUNNIG OLLAMA----->", running_ollama)
     ollama_api_url = os.getenv('OLLAMA_API_URL')
 
 #-------------------------------------------------------------------
