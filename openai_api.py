@@ -23,7 +23,6 @@ def init_api():
 
 def list_models():
     response = openai.Model.list()
-    # Filtering for models with specific keywords in their IDs
     chat_model_keywords = ['gpt']
     chat_model_exclude = ['vision', 'instruct']
     
@@ -32,7 +31,7 @@ def list_models():
                    if any(keyword in model['id'] for keyword in chat_model_keywords)
                    and not any(exclude in model['id'] for exclude in chat_model_exclude)]
     
-    models = [model['id'] for model in chat_models]  # Extracting model ids into a list
+    models = [model['id'] for model in chat_models] 
     models.sort()
 
     if running_ollama == 'true':
@@ -50,6 +49,17 @@ def process_openai_message(chat_history, model):
             yield message
     except OpenAIError as e:
         yield {'error': str(e)}
+
+def process_title_message(chat_history, model):
+    try:
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=chat_history  
+        )
+        ai_message = {'role': 'assistant', 'content': response['choices'][0]['message']['content']}
+        return ai_message
+    except OpenAIError as e:
+        return {'error': str(e)}
 
 def process_ollama_message(chat_history, model):
     prompt = chat_history[-1]['content']
@@ -79,15 +89,3 @@ def process_ollama_message(chat_history, model):
                     'finish_reason': 'stop' if done else None
                 }]
             }
-
-def process_title_message(chat_history, model):
-    try:
-        response = openai.ChatCompletion.create(
-            model=model,
-            messages=chat_history  
-        )
-        ai_message = {'role': 'assistant', 'content': response['choices'][0]['message']['content']}
-        return ai_message
-    except OpenAIError as e:
-        return {'error': str(e)}
-
