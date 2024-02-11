@@ -34,11 +34,10 @@ def list_models():
     
     models = [model['id'] for model in chat_models]  # Extracting model ids into a list
     models.sort()
-    
+
     if running_ollama == 'true':
         models.extend(ollama_models)
     return models
-
 
 def process_openai_message(chat_history, model):
     try:
