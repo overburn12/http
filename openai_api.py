@@ -33,6 +33,8 @@ def list_models():
                    and not any(exclude in model['id'] for exclude in chat_model_exclude)]
     
     models = [model['id'] for model in chat_models]  # Extracting model ids into a list
+    models.sort()
+    
     if running_ollama == 'true':
         models.extend(ollama_models)
     return models
