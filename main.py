@@ -1,20 +1,17 @@
 import json, os
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, abort, Response, send_from_directory
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from database import track_page, init_db
 from openai_api import init_api, list_models, process_ollama_message, process_openai_message, process_title_message, ollama_models
 
-
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-
 app = Flask(__name__)
 
-# Initialize Flask-Limiter to apply a global limit
 limiter = Limiter(
-    key_func=get_remote_address,  # Identify clients by IP address
-    default_limits=["10 per 10 seconds"]  # Apply this limit to all routes
+    key_func=get_remote_address,
+    default_limits=["10 per 10 seconds"]
 )
 limiter.init_app(app)
 
@@ -30,6 +27,18 @@ init_api()
 def index():
     return render_template('index.html')
 
+@app.route('/img/<path:image_name>')
+def serve_image(image_name):
+    image_dir = 'img/'
+    try:
+        return send_from_directory(image_dir, image_name)
+    except FileNotFoundError:
+        abort(404)
+
+#-------------------------------------------------------------------
+# file routes
+#-------------------------------------------------------------------
+
 @app.route('/favicon.ico')
 def serve_favicon():
     favicon_dir = 'img/'
@@ -43,13 +52,18 @@ def robots_txt():
     content = "User-agent: *\nDisallow: /"
     return Response(content, mimetype='text/plain')
 
-@app.route('/img/<path:image_name>')
-def serve_image(image_name):
-    image_dir = 'img/'
-    try:
-        return send_from_directory(image_dir, image_name)
-    except FileNotFoundError:
-        abort(404)
+@app.route('/sitemap.xml')
+def sitemap():
+    xml_content = '''<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+   <url>
+      <loc>https://overburn.org/</loc>
+      <lastmod>2024-02-10</lastmod>
+      <changefreq>never</changefreq>
+      <priority>1.0</priority>
+   </url>
+</urlset>'''
+    return Response(xml_content, mimetype='application/xml')
 
 #-------------------------------------------------------------------
 # api routes
@@ -85,6 +99,8 @@ def chat():
 def return_models():
     return json.dumps(list_models())
 
+#-------------------------------------------------------------------
+# aux. routes
 #-------------------------------------------------------------------
 
 @app.after_request
