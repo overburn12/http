@@ -1,19 +1,11 @@
 import json, os
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, abort, Response, send_from_directory
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 
 from database import track_page, init_db
 from openai_api import init_api, list_models, process_ollama_message, process_openai_message, process_title_message, ollama_models
 
 app = Flask(__name__)
-
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=["20 per 20 seconds"]
-)
-limiter.init_app(app)
 
 load_dotenv() 
 init_db()
