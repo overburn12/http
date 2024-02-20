@@ -63,115 +63,118 @@ async function generateTitle(chat_history, selectedModel) {
       return "error :(";
     }
 }
-  
-  async function sendMessage() {
-    var tempBotMessage = { role: 'assistant', model: '', content: '' };
-    var userMessageElement = document.getElementById('user_message');
-    var userMessageContent = userMessageElement.value;
-    var userMessage = { role: 'user', content: userMessageContent };
-    var isNewChat = chatHistories[currentChatIndex].messages.length === 0;
-    var selectedModel = document.getElementById('chat-model').value;
-    
-    // Add to existing chat
-    chatHistories[currentChatIndex].messages.push(userMessage); 
-  
-    // Add loading and locked classes
+
+function prepareChatHistory(chatHistory) {
+  const preparedChatHistory = { ...chatHistory };
+
+  preparedChatHistory.messages = preparedChatHistory.messages.map(message => {
+    if (message.role === 'assistant') {
+      const { model, ...rest } = message;
+      return rest;
+    }
+    return message;
+  });
+
+  return preparedChatHistory;
+}
+
+async function fetchChatMessages(chatHistory, selectedModel) {
+  const response = await fetch('/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_message: chatHistory, model: selectedModel })
+  });
+  return response.body.getReader();
+}
+
+async function processStream(reader, callback) {
+  let buffer = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += new TextDecoder("utf-8").decode(value);
+    let endOfObjectIndex;
+    while ((endOfObjectIndex = buffer.indexOf("}}")) !== -1) {
+      const objectStr = buffer.slice(0, endOfObjectIndex + 2);
+      buffer = buffer.slice(endOfObjectIndex + 2);
+      try {
+        const jsonMessage = JSON.parse(objectStr);
+        callback(jsonMessage); // Process each JSON object
+      } catch (e) {
+        console.error("Error parsing JSON: ", e);
+      }
+    }
+  }
+}
+
+function handleUIUpdate(startLoading = true) {
+  const userMessageElement = document.getElementById('user_message');
+  if (startLoading) {
     document.body.classList.add('loading');
     userMessageElement.classList.add('locked');
-  
-    // Create a temporary copy of the chat history
-    const tempChatHistory = Object.assign({}, chatHistories[currentChatIndex]);
-  
-    // Modify the temp copy by removing model elements
-    tempChatHistory.messages = tempChatHistory.messages.map(message => {
-      if (message.role === 'assistant') {
-        const { model, ...rest } = message; // Destructure the message object 
-        return rest; // Return the modified message object without the model property
-      }
-      return message;
-    });
-  
-    try {
-      
-      const response = await fetch('/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_message: tempChatHistory.messages, model: selectedModel })
-      });
-  
-      // Assume the response body is a ReadableStream
-      const reader = response.body.getReader();
-      
-      // Start reading the stream
-      let buffer = "";
-  
-      //add a blank bot response to the end of the chat history, this is where the api stream will be saved
-      tempBotMessage.model = selectedModel;
-      chatHistories[currentChatIndex].messages.push(tempBotMessage);
-      const lastElement = chatHistories[currentChatIndex].messages.length - 1; //the index of the specific message we are directing the api data to
-      const responseIndex = currentChatIndex; //in case currentChatIndex changes during the api stream
-  
-      renderChatHistory();
-  
-      while (true) {
-        const { done, value } = await reader.read();
-        
-        if (done) break;
-  
-        buffer += new TextDecoder("utf-8").decode(value);
-  
-        // Try to find the complete JSON objects in the buffer
-        while (true) {
-          const endOfObjectIndex = buffer.indexOf("}}");
-          if (endOfObjectIndex === -1) {
-            break;
-          }
-  
-          const objectStr = buffer.slice(0, endOfObjectIndex + 2);
-          buffer = buffer.slice(endOfObjectIndex + 2);    
-          try {
-            const jsonMessage = JSON.parse(objectStr);
-            if (jsonMessage.error) {
-              throw new Error("Bot Response Error");
-            }
-            const finishReason = jsonMessage.bot_message.choices[0].finish_reason;
-            
-            if (finishReason) {
-              saveChatList(); //save the chat after the bot response is finished
-            } else {
-              // Append to the temporary bot message
-              const chunk_msg = jsonMessage.bot_message.choices[0].delta.content;
-              if (chunk_msg !== undefined) {
-                chatHistories[responseIndex].messages[lastElement].content += chunk_msg;
-              }
-            }
-            // Always re-render to show updates
-            renderChatHistory();
-          } catch (e) {
-            console.error("Error parsing JSON: ", e);
-          }
-        }
-      }
-      // Clear the text field if successful
-      userMessageElement.value = '';
-    } catch (error) {
-      console.error(error);
-      
-      // Remove the last user message from the chat history if there's an error
-      chatHistories[currentChatIndex].messages.pop();
-      renderChatHistory();
-    } finally {
-      // Remove loading and locked classes
-      document.body.classList.remove('loading');
-      userMessageElement.classList.remove('locked');
-    }
-    if (isNewChat) {
-      var newTitle = await generateTitle(chatHistories[currentChatIndex], selectedModel);
-      chatHistories[currentChatIndex].title = newTitle;
-      saveChatList();
-      populateChatList();
-      renderChatHistory();
-    }
+  } else {
+    document.body.classList.remove('loading');
+    userMessageElement.classList.remove('locked');
+    userMessageElement.value = ''; // Clear the text field if successful
+  }
 }
-  
-    
+
+function updateChatHistory(jsonMessage) {
+  if (jsonMessage.error) {
+    console.error("Bot Response Error:", jsonMessage.error);
+    return;
+  }
+
+  const botMessageContent = jsonMessage.bot_message.choices[0].delta.content;
+  const lastElementIndex = chatHistories[currentChatIndex].messages.length - 1;
+
+  if (botMessageContent !== undefined) {
+    chatHistories[currentChatIndex].messages[lastElementIndex].content += botMessageContent;
+  }
+
+  const finishReason = jsonMessage.bot_message.choices[0].finish_reason;
+  if (finishReason) {
+    saveChatList();
+  }
+}
+
+async function updateChatTitle(selectedModel) {
+  const newTitle = await generateTitle(chatHistories[currentChatIndex], selectedModel);
+  chatHistories[currentChatIndex].title = newTitle;
+  saveChatList(); 
+  populateChatList(); 
+  renderChatHistory(); 
+}
+
+async function sendMessage() {
+  const userMessageElement = document.getElementById('user_message');
+  const userMessageContent = userMessageElement.value;
+  const selectedModel = document.getElementById('chat-model').value;
+  const userMessage = { role: 'user', content: userMessageContent };
+  var tempBotMessage = { role: 'assistant', model: selectedModel, content: '' };
+  const isNewChat = chatHistories[currentChatIndex].messages.length === 0;
+
+  chatHistories[currentChatIndex].messages.push(userMessage);
+  chatHistories[currentChatIndex].messages.push(tempBotMessage);
+  handleUIUpdate(); // Start loading UI
+
+  const tempChatHistory = prepareChatHistory(chatHistories[currentChatIndex]);
+
+  try {
+    const reader = await fetchChatMessages(tempChatHistory.messages, selectedModel);
+    await processStream(reader, jsonMessage => {
+      updateChatHistory(jsonMessage);
+      renderChatHistory();
+    });
+  } catch (error) {
+    console.error(error);
+    chatHistories[currentChatIndex].messages.pop(); // Remove the last user message on error
+    renderChatHistory();
+  } finally {
+    handleUIUpdate(false); // Stop loading UI
+  }
+
+  if (isNewChat) {
+    await updateChatTitle(selectedModel);
+  }
+}
