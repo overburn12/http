@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, abort, Response, send_from_directory
 
 from database import track_page, init_db
-from openai_api import init_api, list_models, process_ollama_message, process_openai_message, process_title_message, ollama_models
+from openai_api import init_api, list_models, process_openai_message, process_title_message
 
 app = Flask(__name__)
 
@@ -67,22 +67,16 @@ def get_title():
     model = request.json.get('model')
     title_model = 'gpt-3.5-turbo-16k'
 
-    if model in ollama_models:
-        return jsonify({'bot_message': {'role': 'assistant', 'content': 'ollama'}})
-    else:
-        bot_message = process_title_message(user_message, title_model)
-        return jsonify({'bot_message': bot_message})
+    bot_message = process_title_message(user_message, title_model)
+    return jsonify({'bot_message': bot_message})
 
 @app.route('/chat', methods=['POST','GET'])
 def chat():
-
     user_message = request.json['user_message']
     model = request.json.get('model', 'gpt-3.5-turbo-16k')
 
     def generate(user_message, model):
-        processor = process_ollama_message if model in ollama_models else process_openai_message
-        
-        for bot_message_chunk in processor(user_message, model):
+        for bot_message_chunk in process_openai_message(user_message, model):
             yield json.dumps({'bot_message': bot_message_chunk})
 
     return Response(generate(user_message,model), content_type='text/event-stream')
