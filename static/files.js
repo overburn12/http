@@ -7,7 +7,6 @@ function toggleFileContent(headerElement) {
     }
 }
   
-
 function handleFiles() {
     const files = document.getElementById('codeFiles').files;
     if (files.length === 0) {
