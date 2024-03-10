@@ -19,6 +19,10 @@ init_api()
 def index():
     return render_template('index.html')
 
+@app.route('/char')
+def char_replace():
+    return render_template('replace.html')
+
 @app.route('/img/<path:image_name>')
 def serve_image(image_name):
     image_dir = 'img/'
@@ -64,8 +68,7 @@ def sitemap():
 @app.route('/title', methods=['POST','GET'])
 def get_title():
     user_message = request.json['user_message']
-    model = request.json.get('model')
-    title_model = 'gpt-3.5-turbo-16k'
+    title_model = 'gpt-3.5-turbo-16k' # = request.json.get('model')
 
     bot_message = process_title_message(user_message, title_model)
     return jsonify({'bot_message': bot_message})

@@ -31,7 +31,7 @@ function renderChatHistory() {
   resetChatEdits();
 
   var chat_title = document.getElementById('chat_title_inner');
-  chat_title_inner.innerHTML = '</div><center><h3>' + chatHistories[currentChatIndex].title + '</h3></center>';
+  chat_title.innerHTML = '</div><center><h3>' + chatHistories[currentChatIndex].title + '</h3></center>';
 
   var chatHistoryContainer = document.getElementById('chat_history');
   let htmlString = '';
@@ -141,20 +141,20 @@ function renderSingleMessage(message, currentChatIndex, messageIndex) {
   var isUser = message.role === 'user';
 
   return `
-  <div class="${isUser ? 'user' : 'bot'}-message-line">
-      ${isUser ? '' : '<div class="bot-model">'}
-        <div class="chat-icon">
-          <img src='/img/${isUser ? 'overburn' : 'gpt'}.png'>
-        </div>
-        ${isUser ? '' : `<center>${message.model}</center>`}
-      ${isUser ? '' : '</div>'}
-      <div class="message-container">
-          <div class="edit-icon" onclick="editMessage(this, ${currentChatIndex},${messageIndex})">
-              <img src="/img/edit.png">
+      <div class="${isUser ? 'user' : 'bot'}-message-line">
+          ${isUser ? '' : '<div class="bot-model">'}
+            <div class="chat-icon">
+              <img src='/img/${isUser ? 'overburn' : 'gpt'}.png'>
+            </div>
+            ${isUser ? '' : `<center>${message.model}</center>`}
+          ${isUser ? '' : '</div>'}
+          <div class="message-container">
+              <div class="edit-icon" onclick="editMessage(this, ${currentChatIndex},${messageIndex})">
+                  <img src="/img/edit.png">
+              </div>
+              <div class="message-content">${renderedContent}</div>
           </div>
-          <div class="message-content">${renderedContent}</div>
-      </div>
-  </div>`;
+      </div>`;
 }
 
 function escapeHtml(text) {
