@@ -2,13 +2,12 @@ import json, os
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, abort, Response, send_from_directory
 
-from database import track_page, init_db
+from database import track_page
 from openai_api import init_api, list_models, process_openai_message, process_title_message
 
 app = Flask(__name__)
 
 load_dotenv() 
-init_db()
 init_api()
 
 #-------------------------------------------------------------------
@@ -18,10 +17,6 @@ init_api()
 @app.route('/')
 def index():
     return render_template('index.html')
-
-@app.route('/char')
-def char_replace():
-    return render_template('replace.html')
 
 @app.route('/img/<path:image_name>')
 def serve_image(image_name):
@@ -104,8 +99,4 @@ def page_not_found(e):
 #-------------------------------------------------------------------
 
 if __name__ == '__main__':
-    host = os.environ.get('HOST')
-    port = int(os.environ.get('PORT'))
-    debug = os.environ.get('DEBUG', 'False').lower() == 'true'
-    app.debug = debug
-    app.run(host=host, port=port)
+    app.run(host='0.0.0.0', port=8080)
