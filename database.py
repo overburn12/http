@@ -1,8 +1,10 @@
-import requests
+import requests, os
+from dotenv import load_dotenv
+load_dotenv()
+
+DB_URL = os.getenv('DB_URL')
 
 def track_page(request, response):
-    url = 'http://127.0.0.1:8082/create'
-
     visitor_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     data = {
         'website_id': 'overburn.org',
@@ -16,7 +18,7 @@ def track_page(request, response):
     }
 
     try:
-        res = requests.post(url, json=data)
+        res = requests.post(DB_URL, json=data)
         if res.status_code not in range(200, 300):
             print(f'Error: pagehit_db API problem, Status Code: {res.status_code}')
     except requests.exceptions.RequestException as e:
