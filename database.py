@@ -7,7 +7,7 @@ DB_URL = os.getenv('DB_URL')
 def track_page(request, response):
     visitor_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     data = {
-        'website_id': 'overburn.org',
+        'website_id': 'chat.overburn.dev',
         'page_url': request.path,
         'response_code': response.status_code,
         'visitor_id': visitor_ip,
@@ -21,5 +21,6 @@ def track_page(request, response):
         res = requests.post(DB_URL, json=data)
         if res.status_code not in range(200, 300):
             print(f'Error: pagehit_db API problem, Status Code: {res.status_code}')
+            print(res.json())
     except requests.exceptions.RequestException as e:
         print('Error: pagehit_db API problem, unable to send page hit.')
