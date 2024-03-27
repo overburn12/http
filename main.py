@@ -18,6 +18,7 @@ init_api()
 def index():
     return render_template('index.html')
 
+
 @app.route('/img/<path:image_name>')
 def serve_image(image_name):
     image_dir = 'img/'
@@ -25,6 +26,7 @@ def serve_image(image_name):
         return send_from_directory(image_dir, image_name)
     except FileNotFoundError:
         abort(404)
+
 
 #-------------------------------------------------------------------
 # file routes
@@ -38,23 +40,6 @@ def serve_favicon():
     except FileNotFoundError:
         abort(404)
 
-@app.route('/robots.txt')
-def robots_txt():
-    content = "User-agent: *\nDisallow: /"
-    return Response(content, mimetype='text/plain')
-
-@app.route('/sitemap.xml')
-def sitemap():
-    xml_content = '''<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-   <url>
-      <loc>https://overburn.org/</loc>
-      <lastmod>2024-02-10</lastmod>
-      <changefreq>never</changefreq>
-      <priority>1.0</priority>
-   </url>
-</urlset>'''
-    return Response(xml_content, mimetype='application/xml')
 
 #-------------------------------------------------------------------
 # api routes
@@ -68,6 +53,7 @@ def get_title():
     bot_message = process_title_message(user_message, title_model)
     return jsonify({'bot_message': bot_message})
 
+
 @app.route('/chat', methods=['POST','GET'])
 def chat():
     user_message = request.json['user_message']
@@ -79,9 +65,11 @@ def chat():
 
     return Response(generate(user_message,model), content_type='text/event-stream')
 
+
 @app.route('/models', methods=['GET'])
 def return_models():
     return json.dumps(list_models())
+
 
 #-------------------------------------------------------------------
 # aux. routes
@@ -92,11 +80,13 @@ def after_request(response):
     track_page(request, response)
     return response
 
+
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404
+    return render_template('http_error.html'), 404
+
 
 #-------------------------------------------------------------------
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='::', port=8080)

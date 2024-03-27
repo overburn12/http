@@ -6,6 +6,7 @@ DB_URL = os.getenv('DB_URL')
 
 def track_page(request, response):
     visitor_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    is_ssl = request.headers.get('X-Forwarded-Proto', 'http') == 'https'
     data = {
         'website_id': 'chat.overburn.dev',
         'page_url': request.path,
@@ -14,7 +15,7 @@ def track_page(request, response):
         'referrer_url': request.referrer or '',
         'user_agent': request.user_agent.string,
         'method': request.method,
-        'is_ssl': request.is_secure
+        'is_ssl': is_ssl
     }
 
     try:
