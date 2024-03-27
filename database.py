@@ -22,6 +22,5 @@ def track_page(request, response):
         res = requests.post(DB_URL, json=data)
         if res.status_code not in range(200, 300):
             print(f'Error: pagehit_db API problem, Status Code: {res.status_code}')
-            print(res.json())
     except requests.exceptions.RequestException as e:
         print('Error: pagehit_db API problem, unable to send page hit.')
